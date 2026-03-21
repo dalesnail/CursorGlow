@@ -56,11 +56,18 @@ local function IsFlightMasterName(name)
     return flightMasters and flightMasters[name] or false
 end
 
+local function NormalizeBagID(bag)
+    if bag == -1 then
+        return 0
+    end
+
+    return bag
+end
+
 -- #################################################
 -- Profession Checks
 -- #################################################
 
--- Skinning --
 local function PlayerHasSkinning()
     local prof1, prof2 = GetProfessions()
 
@@ -71,6 +78,146 @@ local function PlayerHasSkinning()
     end
 
     return IsSkinning(prof1) or IsSkinning(prof2)
+end
+
+local function MerchantIsOpen()
+    return MerchantFrame and MerchantFrame:IsShown()
+end
+
+local function GetHoveredFrame()
+    if type(GetMouseFoci) ~= "function" then
+        return nil
+    end
+
+    local foci = GetMouseFoci()
+    if not foci then
+        return nil
+    end
+
+    if type(foci) == "table" then
+        return foci[1]
+    end
+
+    return foci
+end
+
+local function GetBagAndSlotFromDefaultButton(button)
+    if not button then
+        return nil
+    end
+
+    local name = button.GetName and button:GetName()
+    local slot = button.GetID and button:GetID()
+
+    if not name or not slot then
+        return nil
+    end
+
+    local bag = name:match("^ContainerFrame(%d+)Item%d+$")
+    if not bag then
+        return nil
+    end
+
+    bag = tonumber(bag)
+    if not bag then
+        return nil
+    end
+
+    bag = bag - 1
+
+    return bag, slot
+end
+
+local function GetBagAndSlotFromElvUIButton(button)
+    if not button then
+        return nil
+    end
+
+    local parent = button.GetParent and button:GetParent() or nil
+    local bag = parent and parent.GetID and parent:GetID() or nil
+    local slot = button.GetID and button:GetID() or nil
+
+    if bag == nil or slot == nil then
+        return nil
+    end
+
+    return bag, slot
+end
+
+local function GetBagAndSlotFromButton(button)
+    local bag, slot = GetBagAndSlotFromElvUIButton(button)
+    if bag ~= nil and slot ~= nil then
+        return bag, slot
+    end
+
+    bag, slot = GetBagAndSlotFromDefaultButton(button)
+    if bag ~= nil and slot ~= nil then
+        return bag, slot
+    end
+
+    return nil
+end
+
+local function GetBlizzardOrElvUIBagItemFrame(frame)
+    while frame do
+        local name = frame.GetName and frame:GetName()
+
+        if name then
+            if name:match("^ContainerFrame%d+Item%d+$") then
+                return frame
+            end
+
+            if name:match("^ElvUI_ContainerFrameBag%-?%d+Slot%d+$") then
+                return frame
+            end
+        end
+
+        frame = frame.GetParent and frame:GetParent() or nil
+    end
+
+    return nil
+end
+
+local function BagSlotHasItem(bag, slot)
+    if type(GetContainerItemLink) == "function" then
+        return GetContainerItemLink(bag, slot) ~= nil
+    end
+
+    if type(C_Container) == "table" and type(C_Container.GetContainerItemInfo) == "function" then
+        local info = C_Container.GetContainerItemInfo(bag, slot)
+        return info ~= nil
+    end
+
+    return false
+end
+
+local function GetHoveredBagItem()
+    if not MerchantIsOpen() then
+        return nil
+    end
+
+    local hoveredFrame = GetHoveredFrame()
+    if not hoveredFrame then
+        return nil
+    end
+
+    local button = GetBlizzardOrElvUIBagItemFrame(hoveredFrame)
+    if not button then
+        return nil
+    end
+
+    local bag, slot = GetBagAndSlotFromButton(button)
+    if bag == nil or slot == nil then
+        return nil
+    end
+
+    bag = NormalizeBagID(bag)
+
+    if not BagSlotHasItem(bag, slot) then
+        return nil
+    end
+
+    return bag, slot
 end
 
 local function AddTooltipRoleCandidates(candidates, lines, name)
@@ -194,6 +341,10 @@ function CursorGlow:EvaluateTrigger()
 
     AddTooltipRoleCandidates(candidates, lines, name)
 
+    if GetHoveredBagItem() then
+        table.insert(candidates, "SELL_ITEM")
+    end
+
     if UnitExists("mouseover") and not UnitIsUnit("mouseover", "player") then
         local guid = UnitGUID("mouseover")
 
@@ -219,11 +370,10 @@ function CursorGlow:EvaluateTrigger()
             end
         end
 
-        -- ATTACK (only if alive)
         if UnitExists("mouseover")
             and not UnitIsDeadOrGhost("mouseover")
             and UnitCanAttack("player", "mouseover") then
-            
+
             table.insert(candidates, "ATTACK")
         end
     end

@@ -120,6 +120,13 @@ function CursorGlow:OnInitialize()
             repairVendorSizeY = 68,
             repairVendorOffsetX = 14.5,
             repairVendorOffsetY = -15,
+
+            -- SELL ITEM
+            sellItemSizeX = 64,
+            sellItemSizeY = 64,
+            sellItemOffsetX = 13,
+            sellItemOffsetY = -13,
+
         }
     })
 

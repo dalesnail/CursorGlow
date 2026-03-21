@@ -122,6 +122,14 @@ ns.States = {
         offsetY = -13,
     },
 
+    SELL_ITEM = {
+        texture = "Interface\\AddOns\\CursorGlow\\Media\\loot_glow.png",
+        sizeX = 64,
+        sizeY = 64,
+        offsetX = 13,
+        offsetY = -13,
+    },
+
     REPAIR_VENDOR = {
         texture = "Interface\\AddOns\\CursorGlow\\Media\\repair_glow.png",
         sizeX = 67,
@@ -136,7 +144,8 @@ ns.States = {
 -- ############################################################
 
 ns.StatePriority = {
-    HERBALISM = 100,
+    SELL_ITEM = 100,
+    HERBALISM = 95,
     MINING = 95,
     FLIGHTMASTER = 90,
     BATTLEMASTER = 88,

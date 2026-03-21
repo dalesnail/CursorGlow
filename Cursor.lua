@@ -122,6 +122,12 @@ function CursorGlow:ApplyState(stateName, force)
         offsetX = self.db.profile.repairVendorOffsetX or offsetX
         offsetY = self.db.profile.repairVendorOffsetY or offsetY
 
+    elseif stateName == "SELL_ITEM" then
+        sizeX = self.db.profile.SellItemSizeX or sizeX
+        sizeY = self.db.profile.SellItemSizeY or sizeY
+        offsetX = self.db.profile.SellItemOffsetX or offsetX
+        offsetY = self.db.profile.SellItemOffsetY or offsetY
+
     else
         sizeX = self.db.profile.sizeX or sizeX
         sizeY = self.db.profile.sizeY or sizeY

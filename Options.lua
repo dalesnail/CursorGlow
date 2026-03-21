@@ -321,7 +321,32 @@ local function BuildOptions(self)
                         end
                     ),
 
-                    repairVendor = makeGroup("Repair Vendor", 16,
+                    sellItem = makeGroup("Sell Item", 16,
+                        function(v)
+                            if v then p().sellItemSizeX = v end
+                            return p().sellItemSizeX or 64
+                        end,
+                        function(v)
+                            if v then p().sellItemSizeY = v end
+                            return p().sellItemSizeY or 64
+                        end,
+                        function(v)
+                            if v then p().sellItemOffsetX = v end
+                            return p().sellItemOffsetX or 13
+                        end,
+                        function(v)
+                            if v then p().sellItemOffsetY = v end
+                            return p().sellItemOffsetY or -13
+                        end,
+                        function()
+                            p().sellItemSizeX = 64
+                            p().sellItemSizeY = 64
+                            p().sellItemOffsetX = 13
+                            p().sellItemOffsetY = -13
+                        end
+                    ),
+
+                    repairVendor = makeGroup("Repair Vendor", 17,
                         function(v) if v then p().repairVendorSizeX = v end return p().repairVendorSizeX end,
                         function(v) if v then p().repairVendorSizeY = v end return p().repairVendorSizeY end,
                         function(v) if v then p().repairVendorOffsetX = v end return p().repairVendorOffsetX end,
