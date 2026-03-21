@@ -17,6 +17,8 @@ local IsMouseButtonDown = IsMouseButtonDown
 local GetCVar = GetCVar
 local IsModifiedClick = IsModifiedClick
 local GetTime = GetTime
+local GetProfessions = GetProfessions
+local GetProfessionInfo = GetProfessionInfo
 
 local Tooltip = ns.Tooltip
 local Data = ns.Data
@@ -54,6 +56,23 @@ local function IsFlightMasterName(name)
     return flightMasters and flightMasters[name] or false
 end
 
+-- #################################################
+-- Profession Checks
+-- #################################################
+
+-- Skinning --
+local function PlayerHasSkinning()
+    local prof1, prof2 = GetProfessions()
+
+    local function IsSkinning(index)
+        if not index then return false end
+        local name = GetProfessionInfo(index)
+        return name == "Skinning"
+    end
+
+    return IsSkinning(prof1) or IsSkinning(prof2)
+end
+
 local function AddTooltipRoleCandidates(candidates, lines, name)
     if HasTooltipRole(lines, "FLIGHTMASTER") then
         table.insert(candidates, "FLIGHTMASTER")
@@ -85,16 +104,16 @@ local function AddTooltipRoleCandidates(candidates, lines, name)
         table.insert(candidates, "MAILBOX")
     end
 
-    if HasTooltipRole(lines, "SKINNABLE") then
+    if HasTooltipRole(lines, "SKINNABLE") and PlayerHasSkinning() then
         table.insert(candidates, "SKINNABLE")
-    end
-
-    if HasTooltipRole(lines, "VENDOR") then
-        table.insert(candidates, "VENDOR")
     end
 
     if HasTooltipRole(lines, "REPAIR_VENDOR") then
         table.insert(candidates, "REPAIR_VENDOR")
+    end
+
+    if HasTooltipRole(lines, "VENDOR") then
+        table.insert(candidates, "VENDOR")
     end
 end
 
