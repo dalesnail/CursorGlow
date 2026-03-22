@@ -13,6 +13,7 @@ ns.Data["TOOLTIP_ROLE_KEYWORDS"] = {
             ["Bat Handler"] = true,
             ["Dragonhawk Master"] = true,
             ["Spectral Gryphon Master"] = true,
+            ["Emerald Circle Flight Master"] = true,
         },
     },
 
@@ -32,12 +33,16 @@ ns.Data["TOOLTIP_ROLE_KEYWORDS"] = {
     },
 
     DIRECTIONS_GUARD = {
+        exact = {
+            ["Darnassus Sentinel"] = true,
+        },
         contains = {
             "Guard",
             "Guardian",
             "Peacekeeper",
             "Deathguard",
             "Patroller",
+            "Sentinel",
         },
     },
 

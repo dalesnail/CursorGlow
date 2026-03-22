@@ -1,390 +1,1362 @@
--- ############################################################
--- OPTIONS MODULE (FULL UPDATED)
--- ############################################################
-
 local ADDON_NAME, ns = ...
 local CursorGlow = ns.CursorGlow
 
-local AceConfig = LibStub("AceConfig-3.0")
-local AceConfigDialog = LibStub("AceConfigDialog-3.0")
+------------------------------------------------------------------------------------
+-- WINDOW LAYOUT CONSTANTS
+------------------------------------------------------------------------------------
+local BACKDROP_TEMPLATE = BackdropTemplateMixin and "BackdropTemplate" or nil
+local PANEL_MIN_WIDTH = 820
+local PANEL_MIN_HEIGHT = 560
+local NAV_WIDTH = 170
+local NAV_TOP_PADDING = 18
+local CURSORS_LIST_WIDTH = 220
+local PAGE_INSET_X = 8
+local PAGE_HEADER_TOP = -22
+local PAGE_HEADER_HEIGHT = 58
 
-local function refresh(self)
-    self:RefreshActiveState()
+------------------------------------------------------------------------------------
+-- WINDOW SIZE / OFFSET TUNING
+------------------------------------------------------------------------------------
+local WINDOW_RESIZE_OFFSET_X = -6 -- Resize grip x offset from the bottom-right frame corner.
+local WINDOW_RESIZE_OFFSET_Y = 6 -- Resize grip y offset from the bottom-right frame corner.
+local WINDOW_RESIZE_FRAME_LEVEL_OFFSET = 18 -- Resize grip stays above the default frame edge.
+
+------------------------------------------------------------------------------------
+-- SHARED COLOR / FONT HELPERS
+------------------------------------------------------------------------------------
+local GOLD_TEXT = { 1.00, 0.82, 0.00 }
+local GOLD_TEXT_DIM = { 0.94, 0.80, 0.34 }
+local BODY_TEXT = { 0.92, 0.88, 0.80 }
+local MUTED_TEXT = { 0.72, 0.68, 0.60 }
+local SECTION_TEXT = { 0.98, 0.92, 0.78 }
+local PANEL_BORDER = { 0.70, 0.62, 0.45, 0.16 }
+local PANEL_BACKGROUND_DARK = { 0.00, 0.00, 0.00, 0.20 }
+local PANEL_HEADER_SHADE = { 0.18, 0.17, 0.14, 0.12 }
+local PANEL_FOOTER_SHADE = { 0.00, 0.00, 0.00, 0.20 }
+local SELECTED_FILL = { 0.24, 0.20, 0.11, 0.92 }
+local SELECTED_BORDER = { 0.90, 0.77, 0.30, 0.18 }
+local SUBTLE_HOVER_FILL = { 0.18, 0.14, 0.08, 0.10 }
+local SUBTLE_IDLE_FILL = { 0.00, 0.00, 0.00, 0.00 }
+local NAV_HOVER_FILL = { 0.18, 0.14, 0.08, 0.12 }
+local CURSOR_HOVER_FILL = { 0.16, 0.13, 0.08, 0.10 }
+
+local FONT_STYLES = {
+    pageTitle = { template = "GameFontNormalLarge", size = 20, color = GOLD_TEXT, shadow = 0.95 },
+    pageSubtitle = { template = "GameFontHighlight", size = 13, color = BODY_TEXT, shadow = 0.55 },
+    sectionTitle = { template = "GameFontNormal", size = 14, color = SECTION_TEXT, shadow = 0.75 },
+    body = { template = "GameFontHighlight", size = 13, color = BODY_TEXT, shadow = 0.45 },
+    bodySmall = { template = "GameFontHighlightSmall", size = 12, color = BODY_TEXT, shadow = 0.35 },
+    muted = { template = "GameFontHighlightSmall", size = 12, color = MUTED_TEXT, shadow = 0.25 },
+    value = { template = "GameFontHighlight", size = 14, color = GOLD_TEXT, shadow = 0.75 },
+    nav = { template = "GameFontNormalLarge", size = 19, color = GOLD_TEXT_DIM, shadow = 0.8 },
+    navSelected = { template = "GameFontNormalLarge", size = 19, color = GOLD_TEXT, shadow = 0.85 },
+    list = { template = "GameFontHighlightSmall", size = 12, color = BODY_TEXT, shadow = 0.35 },
+    listHover = { template = "GameFontHighlightSmall", size = 12, color = SECTION_TEXT, shadow = 0.45 },
+    listSelected = { template = "GameFontNormal", size = 12, color = GOLD_TEXT, shadow = 0.55 },
+}
+
+------------------------------------------------------------------------------------
+-- PAGE DEFINITIONS
+------------------------------------------------------------------------------------
+local PAGES = {
+    { key = "general", title = "General" },
+    { key = "cursors", title = "Cursors", subtitle = "Tweak cursors size and position" },
+    { key = "appearance", title = "Appearance" },
+    { key = "about", title = "About" },
+}
+
+------------------------------------------------------------------------------------
+-- CURSOR STATE DATA
+------------------------------------------------------------------------------------
+local CURSOR_STATE_ORDER = {
+    "DEFAULT",
+    "ATTACK",
+    "LOOT",
+    "AUTOLOOT",
+    "HERBALISM",
+    "MINING",
+    "FLIGHTMASTER",
+    "BATTLEMASTER",
+    "TRAINER",
+    "DIRECTIONS_GUARD",
+    "INNKEEPER",
+    "STABLEMASTER",
+    "MAILBOX",
+    "SKINNABLE",
+    "VENDOR",
+    "SELL_ITEM",
+    "REPAIR_VENDOR",
+}
+
+local CURSOR_STATE_LABELS = {
+    AUTOLOOT = "Auto Loot",
+    FLIGHTMASTER = "Flight Master",
+    STABLEMASTER = "Stable Master",
+    SELL_ITEM = "Sell Item",
+    REPAIR_VENDOR = "Repair Vendor",
+}
+
+local CURSOR_STATE_CONFIG = {
+    DEFAULT = {
+        widthKey = "sizeX",
+        heightKey = "sizeY",
+        offsetXKey = "offsetX",
+        offsetYKey = "offsetY",
+    },
+    ATTACK = {
+        widthKey = "swordSizeX",
+        heightKey = "swordSizeY",
+        offsetXKey = "swordOffsetX",
+        offsetYKey = "swordOffsetY",
+    },
+    LOOT = {
+        widthKey = "lootSizeX",
+        heightKey = "lootSizeY",
+        offsetXKey = "lootOffsetX",
+        offsetYKey = "lootOffsetY",
+    },
+    AUTOLOOT = {
+        widthKey = "autoLootSizeX",
+        heightKey = "autoLootSizeY",
+        offsetXKey = "autoLootOffsetX",
+        offsetYKey = "autoLootOffsetY",
+    },
+    HERBALISM = {
+        widthKey = "herbSizeX",
+        heightKey = "herbSizeY",
+        offsetXKey = "herbOffsetX",
+        offsetYKey = "herbOffsetY",
+    },
+    MINING = {
+        widthKey = "miningSizeX",
+        heightKey = "miningSizeY",
+        offsetXKey = "miningOffsetX",
+        offsetYKey = "miningOffsetY",
+    },
+    FLIGHTMASTER = {
+        widthKey = "flightMasterSizeX",
+        heightKey = "flightMasterSizeY",
+        offsetXKey = "flightMasterOffsetX",
+        offsetYKey = "flightMasterOffsetY",
+    },
+    BATTLEMASTER = {
+        widthKey = "battlemasterSizeX",
+        heightKey = "battlemasterSizeY",
+        offsetXKey = "battlemasterOffsetX",
+        offsetYKey = "battlemasterOffsetY",
+    },
+    TRAINER = {
+        widthKey = "trainerSizeX",
+        heightKey = "trainerSizeY",
+        offsetXKey = "trainerOffsetX",
+        offsetYKey = "trainerOffsetY",
+    },
+    DIRECTIONS_GUARD = {
+        widthKey = "directionsGuardSizeX",
+        heightKey = "directionsGuardSizeY",
+        offsetXKey = "directionsGuardOffsetX",
+        offsetYKey = "directionsGuardOffsetY",
+    },
+    INNKEEPER = {
+        widthKey = "innkeeperSizeX",
+        heightKey = "innkeeperSizeY",
+        offsetXKey = "innkeeperOffsetX",
+        offsetYKey = "innkeeperOffsetY",
+    },
+    STABLEMASTER = {
+        widthKey = "stableMasterSizeX",
+        heightKey = "stableMasterSizeY",
+        offsetXKey = "stableMasterOffsetX",
+        offsetYKey = "stableMasterOffsetY",
+    },
+    MAILBOX = {
+        widthKey = "mailboxSizeX",
+        heightKey = "mailboxSizeY",
+        offsetXKey = "mailboxOffsetX",
+        offsetYKey = "mailboxOffsetY",
+    },
+    SKINNABLE = {
+        widthKey = "skinnableSizeX",
+        heightKey = "skinnableSizeY",
+        offsetXKey = "skinnableOffsetX",
+        offsetYKey = "skinnableOffsetY",
+    },
+    VENDOR = {
+        widthKey = "vendorSizeX",
+        heightKey = "vendorSizeY",
+        offsetXKey = "vendorOffsetX",
+        offsetYKey = "vendorOffsetY",
+    },
+    SELL_ITEM = {
+        widthKey = "sellItemSizeX",
+        heightKey = "sellItemSizeY",
+        offsetXKey = "sellItemOffsetX",
+        offsetYKey = "sellItemOffsetY",
+    },
+    REPAIR_VENDOR = {
+        widthKey = "repairVendorSizeX",
+        heightKey = "repairVendorSizeY",
+        offsetXKey = "repairVendorOffsetX",
+        offsetYKey = "repairVendorOffsetY",
+    },
+}
+
+local CURSOR_SLIDER_DEFS = {
+    { id = "width", label = "Width", min = 16, max = 128, step = 1 },
+    { id = "height", label = "Height", min = 16, max = 128, step = 1 },
+    { id = "offsetX", label = "Offset X", min = -32, max = 32, step = 0.5 },
+    { id = "offsetY", label = "Offset Y", min = -32, max = 32, step = 0.5 },
+}
+
+local sliderNameIndex = 0
+
+------------------------------------------------------------------------------------
+-- SHARED TEXT STYLING
+------------------------------------------------------------------------------------
+local function ApplyFont(fontString, template, sizeOverride, flagsOverride, color, shadow)
+    if not fontString then
+        return
+    end
+
+    local fontObject = type(template) == "string" and _G[template] or template
+    if fontObject then
+        fontString:SetFontObject(fontObject)
+    end
+
+    if sizeOverride then
+        local fontPath, _, fontFlags = fontString:GetFont()
+        if fontPath then
+            fontString:SetFont(fontPath, sizeOverride, flagsOverride or fontFlags)
+        end
+    end
+
+    if color then
+        fontString:SetTextColor(color[1], color[2], color[3], color[4] or 1)
+    end
+
+    if shadow then
+        fontString:SetShadowOffset(1, -1)
+        fontString:SetShadowColor(0, 0, 0, shadow)
+    else
+        fontString:SetShadowOffset(0, 0)
+        fontString:SetShadowColor(0, 0, 0, 0)
+    end
 end
 
-local function update(self)
-    self:UpdateCursorPosition()
+local function CreateText(parent, template, text, style)
+    local fontString = parent:CreateFontString(nil, "ARTWORK", template)
+    fontString:SetJustifyH("LEFT")
+    fontString:SetJustifyV("TOP")
+    fontString:SetText(text or "")
+    if style then
+        ApplyFont(fontString, style.template or template, style.size, style.flags, style.color, style.shadow)
+    else
+        ApplyFont(fontString, template)
+    end
+    return fontString
 end
 
-local function makeGroup(name, order, sizeX, sizeY, offsetX, offsetY, defaults)
-    return {
-        type = "group",
-        name = name,
-        order = order,
-        args = {
+local function StyleText(fontString, styleOrTemplate, color, shadow)
+    if not fontString then
+        return
+    end
 
-            sizeY = {
-                type = "range", name = "Height",
-                order = 1,
-                width = 1.25,
-                min = 16, max = 300, step = 1,
-                get = function() return sizeY() end,
-                set = function(_, v) sizeY(v) refresh(CursorGlow) end,
-            },
-
-            sizeX = {
-                type = "range", name = "Width",
-                order = 2,
-                width = 1.25,
-                min = 16, max = 300, step = 1,
-                get = function() return sizeX() end,
-                set = function(_, v) sizeX(v) refresh(CursorGlow) end,
-            },
-
-            offsetX = {
-                type = "range", name = "Offset X",
-                order = 3,
-                width = 1.25,
-                min = -100, max = 100, step = 0.5,
-                get = function() return offsetX() end,
-                set = function(_, v) offsetX(v) update(CursorGlow) end,
-            },
-
-            offsetY = {
-                type = "range", name = "Offset Y",
-                order = 4,
-                width = 1.25,
-                min = -100, max = 100, step = 0.5,
-                get = function() return offsetY() end,
-                set = function(_, v) offsetY(v) update(CursorGlow) end,
-            },
-
-            reset = {
-                type = "execute",
-                name = "Reset",
-                order = 5,
-                width = "full",
-                func = function()
-                    defaults()
-                    refresh(CursorGlow)
-                    update(CursorGlow)
-                end,
-            },
-        }
-    }
+    if type(styleOrTemplate) == "table" and styleOrTemplate.template then
+        ApplyFont(fontString, styleOrTemplate.template, styleOrTemplate.size, styleOrTemplate.flags, styleOrTemplate.color, styleOrTemplate.shadow)
+    else
+        ApplyFont(fontString, styleOrTemplate, nil, nil, color and { color[1], color[2], color[3], color[4] }, shadow)
+    end
 end
 
-local function BuildOptions(self)
+------------------------------------------------------------------------------------
+-- FRAME SIZE / VISIBILITY STATE HELPERS
+------------------------------------------------------------------------------------
+local function ClampFrameSize(width, height)
+    local clampedWidth = math.max(PANEL_MIN_WIDTH, math.floor((width or PANEL_MIN_WIDTH) + 0.5))
+    local clampedHeight = math.max(PANEL_MIN_HEIGHT, math.floor((height or PANEL_MIN_HEIGHT) + 0.5))
+    return clampedWidth, clampedHeight
+end
 
-    local p = function() return self.db.profile end
+local function SaveFrameSize(self, frame)
+    if not self or not self.db or not self.db.profile or not frame then
+        return
+    end
 
-    return {
-        type = "group",
-        name = "CursorGlow",
-        childGroups = "tab",
-        args = {
+    local width, height = ClampFrameSize(frame:GetWidth(), frame:GetHeight())
+    self.db.profile.windowWidth = width
+    self.db.profile.windowHeight = height
+end
 
-            -- ##################################################
-            -- GENERAL
-            -- ##################################################
+local function ApplyFrameSize(self, frame)
+    if not self or not self.db or not self.db.profile or not frame then
+        return
+    end
 
-            general = {
-                type = "group",
-                name = "General",
-                order = 0,
-                args = {
+    local width, height = ClampFrameSize(self.db.profile.windowWidth or 900, self.db.profile.windowHeight or 620)
+    frame:SetSize(width, height)
+end
 
-                    testMode = {
-                        type = "toggle",
-                        name = "Test Mode",
-                        width = "full",
-                        order = 1,
-                        get = function() return self.db.profile.testMode end,
-                        set = function(_, val)
-                            self.db.profile.testMode = val
+local function EvaluateAndApplyCurrentState(self)
+    if not self or not self.cursorGlow then
+        return
+    end
 
-                            if val then
-                                self:ApplyVisibility(true)
-                                self:ApplyState("DEFAULT", true)
-                            else
-                                self.currentStateName = nil
-                                self.currentVisible = nil
-                            end
-                        end,
-                    },
-                },
+    self.currentVisible = nil
+    local visible, state = self:EvaluateTrigger()
+    self:ApplyVisibility(visible)
+
+    if visible and state then
+        self:ApplyState(state, true)
+    end
+end
+
+local function GetAddonEnabled(self)
+    return self.db and self.db.profile and self.db.profile.enabled
+end
+
+local function SetAddonEnabled(self, enabled)
+    self.db.profile.enabled = enabled and true or false
+
+    if not enabled then
+        self.currentVisible = nil
+        self:ApplyVisibility(false)
+        return
+    end
+
+    EvaluateAndApplyCurrentState(self)
+end
+
+local function GetTestModeEnabled(self)
+    return self.db and self.db.profile and self.db.profile.testMode
+end
+
+local function SetTestModeEnabled(self, enabled)
+    self.db.profile.testMode = enabled and true or false
+
+    if enabled then
+        self:ApplyVisibility(true)
+        self:ApplyState("DEFAULT", true)
+        return
+    end
+
+    self.currentStateName = nil
+    EvaluateAndApplyCurrentState(self)
+end
+
+------------------------------------------------------------------------------------
+-- BASIC ROW / DIVIDER HELPERS
+------------------------------------------------------------------------------------
+local function CreateSeparator(parent, topAnchor)
+    local line = parent:CreateTexture(nil, "BORDER")
+    line:SetColorTexture(0.90, 0.78, 0.48, 0.16)
+    line:SetPoint("TOPLEFT", topAnchor, "BOTTOMLEFT", 0, -12)
+    line:SetPoint("TOPRIGHT", topAnchor, "BOTTOMRIGHT", 0, -12)
+    line:SetHeight(1)
+    return line
+end
+
+local function CreateCheckboxRow(parent, title, description)
+    local row = CreateFrame("Frame", nil, parent)
+    row:SetHeight(58)
+
+    row.check = CreateFrame("CheckButton", nil, row, "UICheckButtonTemplate")
+    row.check:SetPoint("TOPLEFT", 0, 0)
+
+    row.label = CreateText(row, "GameFontNormal", title, FONT_STYLES.sectionTitle)
+    row.label:SetPoint("TOPLEFT", row.check, "TOPRIGHT", 10, -3)
+    row.label:SetPoint("RIGHT", row, "RIGHT", 0, 0)
+
+    row.description = CreateText(row, "GameFontHighlightSmall", description, FONT_STYLES.body)
+    row.description:SetPoint("TOPLEFT", row.label, "BOTTOMLEFT", 0, -5)
+    row.description:SetPoint("RIGHT", row, "RIGHT", 0, 0)
+
+    return row
+end
+
+------------------------------------------------------------------------------------
+-- PANEL CHROME HELPERS
+------------------------------------------------------------------------------------
+local function CreateSimplePanel(parent)
+    local panel = CreateFrame("Frame", nil, parent, BACKDROP_TEMPLATE)
+    if panel.SetBackdrop then
+        panel:SetBackdrop({
+            edgeFile = "Interface\\Buttons\\WHITE8x8",
+            edgeSize = 1,
+            insets = { left = 1, right = 1, top = 1, bottom = 1 },
+        })
+        panel:SetBackdropBorderColor(PANEL_BORDER[1], PANEL_BORDER[2], PANEL_BORDER[3], PANEL_BORDER[4])
+    end
+
+    panel.bg = panel:CreateTexture(nil, "BACKGROUND")
+    panel.bg:SetAllPoints()
+    panel.bg:SetTexture("Interface\\Buttons\\WHITE8x8")
+    panel.bg:SetVertexColor(0, 0, 0, 0)
+    panel.bg:Hide()
+
+    panel.topShade = panel:CreateTexture(nil, "BORDER")
+    panel.topShade:SetPoint("TOPLEFT", 1, -1)
+    panel.topShade:SetPoint("TOPRIGHT", -1, -1)
+    panel.topShade:SetHeight(54)
+    panel.topShade:SetTexture("Interface\\Buttons\\WHITE8x8")
+    panel.topShade:Hide()
+
+    panel.bottomShade = panel:CreateTexture(nil, "ARTWORK")
+    panel.bottomShade:SetPoint("BOTTOMLEFT", 1, 1)
+    panel.bottomShade:SetPoint("BOTTOMRIGHT", -1, 1)
+    panel.bottomShade:SetHeight(62)
+    panel.bottomShade:SetTexture("Interface\\Buttons\\WHITE8x8")
+    panel.bottomShade:Hide()
+
+    panel.innerLine = panel:CreateTexture(nil, "OVERLAY")
+    panel.innerLine:SetPoint("TOPLEFT", 1, -1)
+    panel.innerLine:SetPoint("TOPRIGHT", -1, -1)
+    panel.innerLine:SetHeight(1)
+    panel.innerLine:SetColorTexture(1, 0.88, 0.60, 0.03)
+
+    return panel
+end
+
+------------------------------------------------------------------------------------
+-- SELECTED / UNSELECTED VISUAL STATE HELPERS
+------------------------------------------------------------------------------------
+local function CreateSelectableButtonChrome(button, accentWidth)
+    if button.SetBackdrop then
+        button:SetBackdrop({
+            edgeFile = "Interface\\Buttons\\WHITE8x8",
+            edgeSize = 1,
+            insets = { left = 1, right = 1, top = 1, bottom = 1 },
+        })
+        button:SetBackdropBorderColor(0, 0, 0, 0)
+    end
+
+    button.fill = button:CreateTexture(nil, "BACKGROUND")
+    button.fill:SetPoint("TOPLEFT", 1, -1)
+    button.fill:SetPoint("BOTTOMRIGHT", -1, 1)
+    button.fill:SetTexture("Interface\\Buttons\\WHITE8x8")
+    button.fill:SetVertexColor(SUBTLE_IDLE_FILL[1], SUBTLE_IDLE_FILL[2], SUBTLE_IDLE_FILL[3], SUBTLE_IDLE_FILL[4])
+
+    button.hoverFill = button:CreateTexture(nil, "BORDER")
+    button.hoverFill:SetPoint("TOPLEFT", 1, -1)
+    button.hoverFill:SetPoint("BOTTOMRIGHT", -1, 1)
+    button.hoverFill:SetTexture("Interface\\Buttons\\WHITE8x8")
+    button.hoverFill:SetVertexColor(SUBTLE_HOVER_FILL[1], SUBTLE_HOVER_FILL[2], SUBTLE_HOVER_FILL[3], SUBTLE_HOVER_FILL[4])
+    button.hoverFill:SetAlpha(0)
+
+    button.accent = button:CreateTexture(nil, "ARTWORK")
+    button.accent:SetPoint("TOPLEFT", 1, -1)
+    button.accent:SetPoint("BOTTOMLEFT", 1, 1)
+    button.accent:SetWidth(accentWidth or 3)
+    button.accent:SetColorTexture(1, 0.83, 0.24, 1)
+    button.accent:SetAlpha(0)
+end
+
+local function ApplySelectableButtonVisuals(button, selected, palette, normalTextStyle, hoverTextStyle, selectedTextStyle)
+    if not button then
+        return
+    end
+
+    button.selected = selected and true or false
+    button.visualPalette = palette
+
+    if button.fill then
+        local fillColor = button.selected and palette.selectedFill or palette.normalFill
+        button.fill:SetColorTexture(fillColor[1], fillColor[2], fillColor[3], fillColor[4] or 1)
+    end
+
+    if button.hoverFill then
+        button.hoverFill:SetAlpha(0)
+    end
+
+    if button.accent then
+        button.accent:SetAlpha(button.selected and 1 or 0)
+    end
+
+    if button.SetBackdropBorderColor then
+        if button.selected then
+            button:SetBackdropBorderColor(SELECTED_BORDER[1], SELECTED_BORDER[2], SELECTED_BORDER[3], SELECTED_BORDER[4])
+        else
+            button:SetBackdropBorderColor(0, 0, 0, 0)
+        end
+    end
+
+    StyleText(button.text, button.selected and selectedTextStyle or normalTextStyle)
+
+    button:SetScript("OnEnter", function(selfButton)
+        local currentPalette = selfButton.visualPalette or palette
+        if selfButton.fill and not selfButton.selected then
+            local fillColor = currentPalette.hoverFill or currentPalette.normalFill
+            selfButton.fill:SetColorTexture(fillColor[1], fillColor[2], fillColor[3], fillColor[4] or 1)
+        end
+
+        if selfButton.hoverFill and not selfButton.selected then
+            selfButton.hoverFill:SetAlpha(1)
+        end
+
+        StyleText(selfButton.text, selfButton.selected and selectedTextStyle or hoverTextStyle)
+    end)
+
+    button:SetScript("OnLeave", function(selfButton)
+        ApplySelectableButtonVisuals(selfButton, selfButton.selected, selfButton.visualPalette or palette, normalTextStyle, hoverTextStyle, selectedTextStyle)
+    end)
+end
+
+------------------------------------------------------------------------------------
+-- LEFT NAV ITEM STYLING
+------------------------------------------------------------------------------------
+local function CreateNavButton(parent, title)
+    local button = CreateFrame("Button", nil, parent, BACKDROP_TEMPLATE)
+    button:SetHeight(36)
+    CreateSelectableButtonChrome(button, 3)
+
+    button.text = button:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    button.text:SetPoint("LEFT", 14, 0)
+    button.text:SetPoint("RIGHT", -12, 0)
+    button.text:SetJustifyH("LEFT")
+    button.text:SetJustifyV("MIDDLE")
+    button.text:SetText(title)
+    StyleText(button.text, FONT_STYLES.nav)
+
+    button.SetSelected = function(selfButton, selected)
+        ApplySelectableButtonVisuals(
+            selfButton,
+            selected,
+            {
+                normalFill = SUBTLE_IDLE_FILL,
+                hoverFill = NAV_HOVER_FILL,
+                selectedFill = SELECTED_FILL,
             },
+            FONT_STYLES.nav,
+            FONT_STYLES.navSelected,
+            FONT_STYLES.navSelected
+        )
+    end
 
-            -- ##################################################
-            -- APPEARANCE (TABBED)
-            -- ##################################################
+    button:SetSelected(false)
 
-            appearance = {
-                type = "group",
-                name = "Appearance",
-                order = 1,
-                childGroups = "tab",
-                args = {
+    return button
+end
 
-                    default = makeGroup("Default", 1,
-                        function(v) if v then p().sizeX = v end return p().sizeX end,
-                        function(v) if v then p().sizeY = v end return p().sizeY end,
-                        function(v) if v then p().offsetX = v end return p().offsetX end,
-                        function(v) if v then p().offsetY = v end return p().offsetY end,
-                        function()
-                            p().sizeX = 68
-                            p().sizeY = 65
-                            p().offsetX = 15
-                            p().offsetY = -13.5
-                        end
-                    ),
+------------------------------------------------------------------------------------
+-- CURSOR LIST ITEM STYLING
+------------------------------------------------------------------------------------
+local function CreateCursorStateButton(parent, title)
+    local button = CreateFrame("Button", nil, parent, BACKDROP_TEMPLATE)
+    button:SetHeight(22)
+    CreateSelectableButtonChrome(button, 2)
 
-                    attack = makeGroup("Attack", 2,
-                        function(v) if v then p().swordSizeX = v end return p().swordSizeX end,
-                        function(v) if v then p().swordSizeY = v end return p().swordSizeY end,
-                        function(v) if v then p().swordOffsetX = v end return p().swordOffsetX end,
-                        function(v) if v then p().swordOffsetY = v end return p().swordOffsetY end,
-                        function()
-                            p().swordSizeX = 70
-                            p().swordSizeY = 70
-                            p().swordOffsetX = 16
-                            p().swordOffsetY = -16
-                        end
-                    ),
+    button.text = button:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    button.text:SetPoint("LEFT", 9, 0)
+    button.text:SetPoint("RIGHT", -8, 0)
+    button.text:SetJustifyH("LEFT")
+    button.text:SetText(title)
+    StyleText(button.text, FONT_STYLES.list)
 
-                    loot = makeGroup("Loot", 3,
-                        function(v) if v then p().lootSizeX = v end return p().lootSizeX end,
-                        function(v) if v then p().lootSizeY = v end return p().lootSizeY end,
-                        function(v) if v then p().lootOffsetX = v end return p().lootOffsetX end,
-                        function(v) if v then p().lootOffsetY = v end return p().lootOffsetY end,
-                        function()
-                            p().lootSizeX = 64
-                            p().lootSizeY = 64
-                            p().lootOffsetX = 13
-                            p().lootOffsetY = -13
-                        end
-                    ),
-
-                    autoloot = makeGroup("Auto Loot", 4,
-                        function(v) if v then p().autoLootSizeX = v end return p().autoLootSizeX end,
-                        function(v) if v then p().autoLootSizeY = v end return p().autoLootSizeY end,
-                        function(v) if v then p().autoLootOffsetX = v end return p().autoLootOffsetX end,
-                        function(v) if v then p().autoLootOffsetY = v end return p().autoLootOffsetY end,
-                        function()
-                            p().autoLootSizeX = 68
-                            p().autoLootSizeY = 68
-                            p().autoLootOffsetX = 15
-                            p().autoLootOffsetY = -15
-                        end
-                    ),
-
-                    herb = makeGroup("Herbalism", 5,
-                        function(v) if v then p().herbSizeX = v end return p().herbSizeX end,
-                        function(v) if v then p().herbSizeY = v end return p().herbSizeY end,
-                        function(v) if v then p().herbOffsetX = v end return p().herbOffsetX end,
-                        function(v) if v then p().herbOffsetY = v end return p().herbOffsetY end,
-                        function()
-                            p().herbSizeX = 70
-                            p().herbSizeY = 70
-                            p().herbOffsetX = 16
-                            p().herbOffsetY = -16
-                        end
-                    ),
-
-                    mining = makeGroup("Mining", 6,
-                        function(v) if v then p().miningSizeX = v end return p().miningSizeX end,
-                        function(v) if v then p().miningSizeY = v end return p().miningSizeY end,
-                        function(v) if v then p().miningOffsetX = v end return p().miningOffsetX end,
-                        function(v) if v then p().miningOffsetY = v end return p().miningOffsetY end,
-                        function()
-                            p().miningSizeX = 65
-                            p().miningSizeY = 70
-                            p().miningOffsetX = 13.5
-                            p().miningOffsetY = -16
-                        end
-                    ),
-
-                    flightmaster = makeGroup("Flight Master", 7,
-                        function(v) if v then p().flightMasterSizeX = v end return p().flightMasterSizeX end,
-                        function(v) if v then p().flightMasterSizeY = v end return p().flightMasterSizeY end,
-                        function(v) if v then p().flightMasterOffsetX = v end return p().flightMasterOffsetX end,
-                        function(v) if v then p().flightMasterOffsetY = v end return p().flightMasterOffsetY end,
-                        function()
-                            p().flightMasterSizeX = 70
-                            p().flightMasterSizeY = 70
-                            p().flightMasterOffsetX = 16
-                            p().flightMasterOffsetY = -16
-                        end
-                    ),
-
-                    battlemaster = makeGroup("Battlemaster", 8,
-                        function(v) if v then p().battlemasterSizeX = v end return p().battlemasterSizeX end,
-                        function(v) if v then p().battlemasterSizeY = v end return p().battlemasterSizeY end,
-                        function(v) if v then p().battlemasterOffsetX = v end return p().battlemasterOffsetX end,
-                        function(v) if v then p().battlemasterOffsetY = v end return p().battlemasterOffsetY end,
-                        function()
-                            p().battlemasterSizeX = 69
-                            p().battlemasterSizeY = 70
-                            p().battlemasterOffsetX = 16
-                            p().battlemasterOffsetY = -16
-                        end
-                    ),
-
-                    trainer = makeGroup("Trainer", 9,
-                        function(v) if v then p().trainerSizeX = v end return p().trainerSizeX end,
-                        function(v) if v then p().trainerSizeY = v end return p().trainerSizeY end,
-                        function(v) if v then p().trainerOffsetX = v end return p().trainerOffsetX end,
-                        function(v) if v then p().trainerOffsetY = v end return p().trainerOffsetY end,
-                        function()
-                            p().trainerSizeX = 70
-                            p().trainerSizeY = 69
-                            p().trainerOffsetX = 16
-                            p().trainerOffsetY = -16
-                        end
-                    ),
-
-                    directionsGuard = makeGroup("Directions Guard", 10,
-                        function(v) if v then p().directionsGuardSizeX = v end return p().directionsGuardSizeX end,
-                        function(v) if v then p().directionsGuardSizeY = v end return p().directionsGuardSizeY end,
-                        function(v) if v then p().directionsGuardOffsetX = v end return p().directionsGuardOffsetX end,
-                        function(v) if v then p().directionsGuardOffsetY = v end return p().directionsGuardOffsetY end,
-                        function()
-                            p().directionsGuardSizeX = 68
-                            p().directionsGuardSizeY = 69
-                            p().directionsGuardOffsetX = 15.5
-                            p().directionsGuardOffsetY = -15
-                        end
-                    ),
-
-                    innkeeper = makeGroup("Innkeeper", 11,
-                        function(v) if v then p().innkeeperSizeX = v end return p().innkeeperSizeX end,
-                        function(v) if v then p().innkeeperSizeY = v end return p().innkeeperSizeY end,
-                        function(v) if v then p().innkeeperOffsetX = v end return p().innkeeperOffsetX end,
-                        function(v) if v then p().innkeeperOffsetY = v end return p().innkeeperOffsetY end,
-                        function()
-                            p().innkeeperSizeX = 66
-                            p().innkeeperSizeY = 66
-                            p().innkeeperOffsetX = 14
-                            p().innkeeperOffsetY = -14
-                        end
-                    ),
-
-                    stablemaster = makeGroup("Stable Master", 12,
-                        function(v) if v then p().stableMasterSizeX = v end return p().stableMasterSizeX end,
-                        function(v) if v then p().stableMasterSizeY = v end return p().stableMasterSizeY end,
-                        function(v) if v then p().stableMasterOffsetX = v end return p().stableMasterOffsetX end,
-                        function(v) if v then p().stableMasterOffsetY = v end return p().stableMasterOffsetY end,
-                        function()
-                            p().stableMasterSizeX = 69
-                            p().stableMasterSizeY = 69
-                            p().stableMasterOffsetX = 15.5
-                            p().stableMasterOffsetY = -15.5
-                        end
-                    ),
-
-                    mailbox = makeGroup("Mailbox", 13,
-                        function(v) if v then p().mailboxSizeX = v end return p().mailboxSizeX end,
-                        function(v) if v then p().mailboxSizeY = v end return p().mailboxSizeY end,
-                        function(v) if v then p().mailboxOffsetX = v end return p().mailboxOffsetX end,
-                        function(v) if v then p().mailboxOffsetY = v end return p().mailboxOffsetY end,
-                        function()
-                            p().mailboxSizeX = 70
-                            p().mailboxSizeY = 65
-                            p().mailboxOffsetX = 16
-                            p().mailboxOffsetY = -13.5
-                        end
-                    ),
-
-                    skinnable = makeGroup("Skinnable", 14,
-                        function(v) if v then p().skinnableSizeX = v end return p().skinnableSizeX end,
-                        function(v) if v then p().skinnableSizeY = v end return p().skinnableSizeY end,
-                        function(v) if v then p().skinnableOffsetX = v end return p().skinnableOffsetX end,
-                        function(v) if v then p().skinnableOffsetY = v end return p().skinnableOffsetY end,
-                        function()
-                            p().skinnableSizeX = 69
-                            p().skinnableSizeY = 66
-                            p().skinnableOffsetX = 16
-                            p().skinnableOffsetY = -16
-                        end
-                    ),
-
-                    vendor = makeGroup("Vendor", 15,
-                        function(v) if v then p().vendorSizeX = v end return p().vendorSizeX end,
-                        function(v) if v then p().vendorSizeY = v end return p().vendorSizeY end,
-                        function(v) if v then p().vendorOffsetX = v end return p().vendorOffsetX end,
-                        function(v) if v then p().vendorOffsetY = v end return p().vendorOffsetY end,
-                        function()
-                            p().vendorSizeX = 64
-                            p().vendorSizeY = 64
-                            p().vendorOffsetX = 13
-                            p().vendorOffsetY = -13
-                        end
-                    ),
-
-                    sellItem = makeGroup("Sell Item", 16,
-                        function(v)
-                            if v then p().sellItemSizeX = v end
-                            return p().sellItemSizeX or 64
-                        end,
-                        function(v)
-                            if v then p().sellItemSizeY = v end
-                            return p().sellItemSizeY or 64
-                        end,
-                        function(v)
-                            if v then p().sellItemOffsetX = v end
-                            return p().sellItemOffsetX or 13
-                        end,
-                        function(v)
-                            if v then p().sellItemOffsetY = v end
-                            return p().sellItemOffsetY or -13
-                        end,
-                        function()
-                            p().sellItemSizeX = 64
-                            p().sellItemSizeY = 64
-                            p().sellItemOffsetX = 13
-                            p().sellItemOffsetY = -13
-                        end
-                    ),
-
-                    repairVendor = makeGroup("Repair Vendor", 17,
-                        function(v) if v then p().repairVendorSizeX = v end return p().repairVendorSizeX end,
-                        function(v) if v then p().repairVendorSizeY = v end return p().repairVendorSizeY end,
-                        function(v) if v then p().repairVendorOffsetX = v end return p().repairVendorOffsetX end,
-                        function(v) if v then p().repairVendorOffsetY = v end return p().repairVendorOffsetY end,
-                        function()
-                            p().repairVendorSizeX = 67
-                            p().repairVendorSizeY = 68
-                            p().repairVendorOffsetX = 14.5
-                            p().repairVendorOffsetY = -15
-                        end
-                    ),
-                },
+    button.SetSelected = function(selfButton, selected)
+        ApplySelectableButtonVisuals(
+            selfButton,
+            selected,
+            {
+                normalFill = SUBTLE_IDLE_FILL,
+                hoverFill = CURSOR_HOVER_FILL,
+                selectedFill = SELECTED_FILL,
             },
-        },
-    }
+            FONT_STYLES.list,
+            FONT_STYLES.listHover,
+            FONT_STYLES.listSelected
+        )
+    end
+
+    button:SetSelected(false)
+
+    return button
+end
+
+------------------------------------------------------------------------------------
+-- CURSOR STATE LABEL / VALUE HELPERS
+------------------------------------------------------------------------------------
+local function FormatCursorStateLabel(stateKey)
+    if CURSOR_STATE_LABELS[stateKey] then
+        return CURSOR_STATE_LABELS[stateKey]
+    end
+
+    local words = { strsplit("_", stateKey or "") }
+    for index, word in ipairs(words) do
+        words[index] = word:sub(1, 1) .. word:sub(2):lower()
+    end
+
+    return table.concat(words, " ")
+end
+
+local function GetCursorStateEntries()
+    local entries = {}
+    local seen = {}
+    local states = ns.States or {}
+
+    for _, stateKey in ipairs(CURSOR_STATE_ORDER) do
+        if states[stateKey] then
+            entries[#entries + 1] = {
+                key = stateKey,
+                label = FormatCursorStateLabel(stateKey),
+            }
+            seen[stateKey] = true
+        end
+    end
+
+    for stateKey in pairs(states) do
+        if not seen[stateKey] then
+            entries[#entries + 1] = {
+                key = stateKey,
+                label = FormatCursorStateLabel(stateKey),
+            }
+        end
+    end
+
+    return entries
+end
+
+local function GetCursorStateConfig(stateKey)
+    return CURSOR_STATE_CONFIG[stateKey]
+end
+
+local function GetCursorStateDefaultValue(self, stateKey, controlId)
+    local config = GetCursorStateConfig(stateKey)
+    if not config then
+        return 0
+    end
+
+    local profileDefaults = self and self.db and self.db.defaults and self.db.defaults.profile
+    local profileKey = config[controlId .. "Key"]
+    if profileDefaults and profileDefaults[profileKey] ~= nil then
+        return profileDefaults[profileKey]
+    end
+
+    local state = ns.States and ns.States[stateKey]
+    if state then
+        if controlId == "width" then
+            return state.sizeX or 0
+        elseif controlId == "height" then
+            return state.sizeY or 0
+        elseif controlId == "offsetX" then
+            return state.offsetX or 0
+        elseif controlId == "offsetY" then
+            return state.offsetY or 0
+        end
+    end
+
+    return 0
+end
+
+local function GetCursorStateValue(self, stateKey, controlId)
+    local config = GetCursorStateConfig(stateKey)
+    if not config or not self or not self.db or not self.db.profile then
+        return 0
+    end
+
+    local profileKey = config[controlId .. "Key"]
+    local value = self.db.profile[profileKey]
+    if value == nil then
+        value = GetCursorStateDefaultValue(self, stateKey, controlId)
+    end
+
+    return value
+end
+
+local function SetCursorStateValue(self, stateKey, controlId, value)
+    local config = GetCursorStateConfig(stateKey)
+    if not config or not self or not self.db or not self.db.profile then
+        return
+    end
+
+    self.db.profile[config[controlId .. "Key"]] = value
+
+    if self.RefreshActiveState then
+        self:RefreshActiveState()
+    end
+end
+
+local function ResetCursorStateToDefaults(self, stateKey)
+    local config = GetCursorStateConfig(stateKey)
+    if not config or not self or not self.db or not self.db.profile then
+        return
+    end
+
+    for _, control in ipairs(CURSOR_SLIDER_DEFS) do
+        local profileKey = config[control.id .. "Key"]
+        self.db.profile[profileKey] = GetCursorStateDefaultValue(self, stateKey, control.id)
+    end
+
+    if self.RefreshActiveState then
+        self:RefreshActiveState()
+    end
+end
+
+local function FormatNumericValue(value)
+    if math.abs(value - math.floor(value + 0.5)) < 0.001 then
+        return tostring(math.floor(value + 0.5))
+    end
+
+    return string.format("%.1f", value)
+end
+
+------------------------------------------------------------------------------------
+-- SLIDER VISUAL CONSTRUCTION
+------------------------------------------------------------------------------------
+local function CreateValueSlider(parent, labelText, minValue, maxValue, step)
+    sliderNameIndex = sliderNameIndex + 1
+
+    local row = CreateFrame("Frame", nil, parent)
+    row:SetHeight(60)
+
+    row.label = CreateText(row, "GameFontNormal", labelText, FONT_STYLES.sectionTitle)
+    row.label:SetPoint("TOPLEFT", 0, 0)
+
+    row.valueText = CreateText(row, "GameFontHighlight", "", FONT_STYLES.value)
+    row.valueText:SetPoint("TOPRIGHT", 0, 0)
+
+    row.slider = CreateFrame("Slider", "CursorGlowValueSlider" .. sliderNameIndex, row)
+    row.slider:SetOrientation("HORIZONTAL")
+    row.slider:SetPoint("TOPLEFT", row.label, "BOTTOMLEFT", 0, -11)
+    row.slider:SetPoint("TOPRIGHT", row, "TOPRIGHT", 0, -24)
+    row.slider:SetHeight(20)
+    row.slider:SetMinMaxValues(minValue, maxValue)
+    row.slider:SetValueStep(step)
+    if row.slider.SetObeyStepOnDrag then
+        row.slider:SetObeyStepOnDrag(true)
+    end
+    row.slider:EnableMouse(true)
+    row.slider:SetThumbTexture("Interface\\Buttons\\WHITE8x8")
+
+    row.slider.trackShadow = row.slider:CreateTexture(nil, "BACKGROUND")
+    row.slider.trackShadow:SetPoint("LEFT", row.slider, "LEFT", 3, -1)
+    row.slider.trackShadow:SetPoint("RIGHT", row.slider, "RIGHT", -3, -1)
+    row.slider.trackShadow:SetHeight(8)
+    row.slider.trackShadow:SetTexture("Interface\\Buttons\\WHITE8x8")
+    row.slider.trackShadow:SetVertexColor(0, 0, 0, 0.30)
+
+    row.slider.trackLeft = row.slider:CreateTexture(nil, "ARTWORK")
+    row.slider.trackLeft:SetPoint("LEFT", row.slider, "LEFT", 0, 0)
+    if row.slider.trackLeft.SetAtlas then
+        row.slider.trackLeft:SetAtlas("Minimal_SliderBar_Left", true)
+    else
+        row.slider.trackLeft:SetTexture("Interface\\Buttons\\WHITE8x8")
+        row.slider.trackLeft:SetSize(8, 8)
+        row.slider.trackLeft:SetVertexColor(0.65, 0.65, 0.65, 1)
+    end
+
+    row.slider.trackRight = row.slider:CreateTexture(nil, "ARTWORK")
+    row.slider.trackRight:SetPoint("RIGHT", row.slider, "RIGHT", 0, 0)
+    if row.slider.trackRight.SetAtlas then
+        row.slider.trackRight:SetAtlas("Minimal_SliderBar_Right", true)
+    else
+        row.slider.trackRight:SetTexture("Interface\\Buttons\\WHITE8x8")
+        row.slider.trackRight:SetSize(8, 8)
+        row.slider.trackRight:SetVertexColor(0.65, 0.65, 0.65, 1)
+    end
+
+    row.slider.trackMiddle = row.slider:CreateTexture(nil, "ARTWORK")
+    row.slider.trackMiddle:SetPoint("LEFT", row.slider.trackLeft, "RIGHT", 0, 0)
+    row.slider.trackMiddle:SetPoint("RIGHT", row.slider.trackRight, "LEFT", 0, 0)
+    row.slider.trackMiddle:SetPoint("TOP", row.slider.trackLeft, "TOP", 0, 0)
+    row.slider.trackMiddle:SetPoint("BOTTOM", row.slider.trackLeft, "BOTTOM", 0, 0)
+    if row.slider.trackMiddle.SetAtlas then
+        row.slider.trackMiddle:SetAtlas("_Minimal_SliderBar_Middle", false)
+    else
+        row.slider.trackMiddle:SetTexture("Interface\\Buttons\\WHITE8x8")
+        row.slider.trackMiddle:SetVertexColor(0.65, 0.65, 0.65, 1)
+    end
+
+    local thumb = row.slider.GetThumbTexture and row.slider:GetThumbTexture()
+    if thumb then
+        if thumb.SetAtlas then
+            thumb:SetAtlas("Minimal_SliderBar_Button", true)
+        else
+            thumb:SetTexture("Interface\\Buttons\\WHITE8x8")
+            thumb:SetVertexColor(0.95, 0.78, 0.22, 1)
+        end
+        thumb:SetDrawLayer("OVERLAY", 1)
+    end
+
+    function row:SetDisplayValue(value)
+        self.valueText:SetText(FormatNumericValue(value))
+    end
+
+    return row
+end
+
+------------------------------------------------------------------------------------
+-- PAGE LAYOUT
+------------------------------------------------------------------------------------
+local function CreatePage(parent, pageData)
+    local page = CreateFrame("Frame", nil, parent)
+    page:SetAllPoints()
+    page:Hide()
+
+    page.header = CreateFrame("Frame", nil, page)
+    page.header:SetPoint("TOPLEFT", PAGE_INSET_X, PAGE_HEADER_TOP)
+    page.header:SetPoint("TOPRIGHT", -PAGE_INSET_X, PAGE_HEADER_TOP)
+    page.header:SetHeight(pageData.subtitle and PAGE_HEADER_HEIGHT or 28)
+
+    page.title = CreateText(page.header, "GameFontNormalLarge", pageData.title, FONT_STYLES.pageTitle)
+    page.title:SetPoint("TOPLEFT", 0, 0)
+    page.title:SetPoint("TOPRIGHT", 0, 0)
+    if pageData.subtitle then
+        page.subtitle = CreateText(page.header, "GameFontHighlight", pageData.subtitle, FONT_STYLES.pageSubtitle)
+        page.subtitle:SetPoint("TOPLEFT", page.title, "BOTTOMLEFT", 0, -6)
+        page.subtitle:SetPoint("TOPRIGHT", page.title, "BOTTOMRIGHT", 0, -6)
+    end
+
+    page.body = CreateFrame("Frame", nil, page)
+    page.body:SetPoint("TOPLEFT", page.header, "BOTTOMLEFT", 0, -18)
+    page.body:SetPoint("TOPRIGHT", page.header, "BOTTOMRIGHT", 0, -18)
+    page.body:SetPoint("BOTTOMLEFT", PAGE_INSET_X, 0)
+    page.body:SetPoint("BOTTOMRIGHT", -PAGE_INSET_X, 0)
+
+    return page
+end
+
+------------------------------------------------------------------------------------
+-- GENERAL PAGE BUILD
+------------------------------------------------------------------------------------
+local function BuildGeneralPage(self, page)
+    local intro = CreateText(page.body, "GameFontHighlight", "Simple baseline settings for CursorGlow. This reset intentionally removes the previous custom options shell and keeps only a stable foundation.", FONT_STYLES.body)
+    intro:SetPoint("TOPLEFT", 0, 0)
+    intro:SetPoint("RIGHT", page.body, "RIGHT", 0, 0)
+
+    page.enableRow = CreateCheckboxRow(page.body, "Enable Addon", "Master toggle for CursorGlow.")
+    page.enableRow:SetPoint("TOPLEFT", intro, "BOTTOMLEFT", 0, -18)
+    page.enableRow:SetPoint("RIGHT", page.body, "RIGHT", 0, 0)
+    page.enableRow.check:SetScript("OnClick", function(button)
+        SetAddonEnabled(self, button:GetChecked())
+        page:RefreshControls()
+    end)
+
+    page.testModeRow = CreateCheckboxRow(page.body, "Test Mode", "Shows the default glow for placement preview.")
+    page.testModeRow:SetPoint("TOPLEFT", page.enableRow, "BOTTOMLEFT", 0, -10)
+    page.testModeRow:SetPoint("RIGHT", page.body, "RIGHT", 0, 0)
+    page.testModeRow.check:SetScript("OnClick", function(button)
+        SetTestModeEnabled(self, button:GetChecked())
+        page:RefreshControls()
+    end)
+
+    page.note = CreateText(page.body, "GameFontHighlightSmall", "Additional controls will be rebuilt on top of this simplified panel in later steps.", FONT_STYLES.muted)
+    page.note:SetPoint("TOPLEFT", page.testModeRow, "BOTTOMLEFT", 4, -14)
+    page.note:SetPoint("RIGHT", page.body, "RIGHT", 0, 0)
+
+    page.RefreshControls = function(currentPage)
+        currentPage.enableRow.check:SetChecked(GetAddonEnabled(self))
+        currentPage.testModeRow.check:SetChecked(GetTestModeEnabled(self))
+    end
+end
+
+------------------------------------------------------------------------------------
+-- REUSABLE INFO PANEL BUILD
+------------------------------------------------------------------------------------
+local function CreateSectionPanel(parent, title, bodyText)
+    local panel = CreateSimplePanel(parent)
+    panel:SetHeight(126)
+
+    panel.title = CreateText(panel, "GameFontNormal", title, FONT_STYLES.sectionTitle)
+    panel.title:SetPoint("TOPLEFT", 16, -14)
+    panel.title:SetPoint("TOPRIGHT", -16, -14)
+
+    panel.separator = CreateSeparator(panel, panel.title)
+
+    panel.bodyText = CreateText(panel, "GameFontHighlightSmall", bodyText, FONT_STYLES.body)
+    panel.bodyText:SetPoint("TOPLEFT", panel.separator, "BOTTOMLEFT", 0, -14)
+    panel.bodyText:SetPoint("TOPRIGHT", -16, -38)
+    panel.bodyText:SetJustifyV("TOP")
+
+    return panel
+end
+------------------------------------------------------------------------------------
+-- APPEARANCE PAGE BUILD
+------------------------------------------------------------------------------------
+local function BuildAppearancePage(page)
+    page.intro = CreateText(page.body, "GameFontHighlight", "Appearance controls are being rebuilt carefully. This page is a clean staging area for visual settings that can be added safely in later passes.", FONT_STYLES.body)
+    page.intro:SetPoint("TOPLEFT", 0, 0)
+    page.intro:SetPoint("TOPRIGHT", 0, 0)
+
+    page.alphaSection = CreateSectionPanel(page.body, "Glow Alpha", "Placeholder for a future global transparency control. No live alpha setting is wired in this pass to avoid changing the current config or render behavior.")
+    page.alphaSection:SetPoint("TOPLEFT", page.intro, "BOTTOMLEFT", 0, -18)
+    page.alphaSection:SetPoint("TOPRIGHT", page.body, "TOPRIGHT", 0, -58)
+
+    page.recolorSection = CreateSectionPanel(page.body, "Recoloring", "Placeholder for future color override controls. Recolor logic is intentionally not reintroduced here while the rebuilt options shell is being completed.")
+    page.recolorSection:SetPoint("TOPLEFT", page.alphaSection, "BOTTOMLEFT", 0, -14)
+    page.recolorSection:SetPoint("TOPRIGHT", page.body, "TOPRIGHT", 0, -190)
+
+    page.previewSection = CreateSectionPanel(page.body, "Preview Behavior", "Placeholder for future preview-specific controls such as live preview rules or temporary display behavior. Existing test mode remains available on the General page.")
+    page.previewSection:SetPoint("TOPLEFT", page.recolorSection, "BOTTOMLEFT", 0, -14)
+    page.previewSection:SetPoint("TOPRIGHT", page.body, "TOPRIGHT", 0, -322)
+
+    page.RefreshControls = function()
+    end
+end
+
+------------------------------------------------------------------------------------
+-- CURSOR EDITOR STATE REFRESH
+------------------------------------------------------------------------------------
+local function RefreshCursorEditor(page)
+    if not page or not page.selectedStateKey then
+        return
+    end
+
+    local entry = page.stateLookup[page.selectedStateKey]
+    if not entry then
+        return
+    end
+
+    page.editorTitle:SetText(entry.label)
+
+    for _, control in ipairs(page.editorControls or {}) do
+        local value = GetCursorStateValue(page.owner, page.selectedStateKey, control.controlId)
+        control.isUpdating = true
+        control.slider:SetValue(value)
+        control:SetDisplayValue(value)
+        control.isUpdating = false
+    end
+end
+
+local function SelectCursorState(page, stateKey)
+    if not page or not page.stateButtons or not page.stateLookup[stateKey] then
+        return
+    end
+
+    page.selectedStateKey = stateKey
+
+    for key, button in pairs(page.stateButtons) do
+        button:SetSelected(key == stateKey)
+    end
+
+    local entry = page.stateLookup[stateKey]
+    page.editorTitle:SetText(entry.label)
+    RefreshCursorEditor(page)
+end
+
+------------------------------------------------------------------------------------
+-- CURSORS PAGE BUILD
+------------------------------------------------------------------------------------
+local function BuildCursorsPage(self, page)
+    page.owner = self
+    page.stateButtons = {}
+    page.stateLookup = {}
+    page.stateEntries = GetCursorStateEntries()
+
+    page.leftPanel = CreateSimplePanel(page.body)
+    page.leftPanel:SetPoint("TOPLEFT", 0, 0)
+    page.leftPanel:SetPoint("BOTTOMLEFT", 0, 0)
+    page.leftPanel:SetWidth(CURSORS_LIST_WIDTH)
+
+    page.rightPanel = CreateSimplePanel(page.body)
+    page.rightPanel:SetPoint("TOPLEFT", page.leftPanel, "TOPRIGHT", 16, 0)
+    page.rightPanel:SetPoint("BOTTOMRIGHT", 0, 0)
+
+    page.leftTitle = CreateText(page.leftPanel, "GameFontNormal", "Cursor Types", FONT_STYLES.sectionTitle)
+    page.leftTitle:SetPoint("TOPLEFT", 14, -14)
+    page.leftTitle:SetPoint("TOPRIGHT", -14, -14)
+
+    page.leftSeparator = CreateSeparator(page.leftPanel, page.leftTitle)
+
+    page.listScroll = CreateFrame("ScrollFrame", nil, page.leftPanel, "UIPanelScrollFrameTemplate")
+    page.listScroll:SetPoint("TOPLEFT", page.leftSeparator, "BOTTOMLEFT", 0, -12)
+    page.listScroll:SetPoint("BOTTOMRIGHT", page.leftPanel, "BOTTOMRIGHT", -28, 12)
+
+    page.listContent = CreateFrame("Frame", nil, page.listScroll)
+    page.listContent:SetPoint("TOPLEFT", 0, 0)
+    page.listContent:SetWidth(CURSORS_LIST_WIDTH - 40)
+    page.listScroll:SetScrollChild(page.listContent)
+
+    page.editorTitle = CreateText(page.rightPanel, "GameFontNormalLarge", "", FONT_STYLES.pageTitle)
+    page.editorTitle:SetPoint("TOPLEFT", 18, -16)
+    page.editorTitle:SetPoint("TOPRIGHT", -18, -16)
+
+    page.editorSeparator = CreateSeparator(page.rightPanel, page.editorTitle)
+
+    page.editorControls = {}
+
+    local previousControl
+    for _, controlDef in ipairs(CURSOR_SLIDER_DEFS) do
+        local control = CreateValueSlider(page.rightPanel, controlDef.label, controlDef.min, controlDef.max, controlDef.step)
+        if previousControl then
+            control:SetPoint("TOPLEFT", previousControl, "BOTTOMLEFT", 0, -20)
+            control:SetPoint("TOPRIGHT", previousControl, "BOTTOMRIGHT", 0, -20)
+        else
+            control:SetPoint("TOPLEFT", page.editorSeparator, "BOTTOMLEFT", 18, -20)
+            control:SetPoint("TOPRIGHT", page.rightPanel, "TOPRIGHT", -26, -50)
+        end
+
+        control.controlId = controlDef.id
+        local controlStep = controlDef.step or 1
+        local currentControl = control
+        control.slider:SetScript("OnValueChanged", function(_, value)
+            if currentControl.isUpdating or not page.selectedStateKey then
+                return
+            end
+
+            local roundedValue = math.floor((value / controlStep) + 0.5) * controlStep
+            currentControl:SetDisplayValue(roundedValue)
+            SetCursorStateValue(self, page.selectedStateKey, currentControl.controlId, roundedValue)
+        end)
+
+        page.editorControls[#page.editorControls + 1] = control
+        previousControl = control
+    end
+
+    page.resetButton = CreateFrame("Button", nil, page.rightPanel, "UIPanelButtonTemplate")
+    page.resetButton:SetSize(140, 24)
+    page.resetButton:SetText("Reset to Defaults")
+    page.resetButton:SetPoint("TOPLEFT", previousControl, "BOTTOMLEFT", 2, -22)
+    page.resetButton:SetScript("OnClick", function()
+        if not page.selectedStateKey then
+            return
+        end
+
+        ResetCursorStateToDefaults(self, page.selectedStateKey)
+        RefreshCursorEditor(page)
+    end)
+
+    local previousButton
+    for _, entry in ipairs(page.stateEntries) do
+        local button = CreateCursorStateButton(page.listContent, entry.label)
+        button:SetWidth(CURSORS_LIST_WIDTH - 48)
+
+        if previousButton then
+            button:SetPoint("TOPLEFT", previousButton, "BOTTOMLEFT", 0, -6)
+        else
+            button:SetPoint("TOPLEFT", 0, 0)
+        end
+
+        button:SetScript("OnClick", function()
+            SelectCursorState(page, entry.key)
+        end)
+
+        page.stateButtons[entry.key] = button
+        page.stateLookup[entry.key] = entry
+        previousButton = button
+    end
+
+    if previousButton then
+        page.listContent:SetHeight((#page.stateEntries * 22) + ((#page.stateEntries - 1) * 6))
+    else
+        page.listContent:SetHeight(1)
+    end
+
+    page.RefreshControls = function(currentPage)
+        if not currentPage.selectedStateKey and currentPage.stateEntries[1] then
+            currentPage.selectedStateKey = currentPage.stateEntries[1].key
+        end
+
+        if currentPage.selectedStateKey then
+            SelectCursorState(currentPage, currentPage.selectedStateKey)
+        end
+    end
+end
+
+------------------------------------------------------------------------------------
+-- ABOUT PAGE BUILD
+------------------------------------------------------------------------------------
+local function BuildAboutPage(page)
+    local version = GetAddOnMetadata and GetAddOnMetadata(ADDON_NAME, "Version") or "Unknown"
+    local addonTitle = GetAddOnMetadata and GetAddOnMetadata(ADDON_NAME, "Title") or ADDON_NAME or "CursorGlow"
+
+    page.summary = CreateSimplePanel(page.body)
+    page.summary:SetPoint("TOPLEFT", 0, 0)
+    page.summary:SetPoint("TOPRIGHT", 0, 0)
+    page.summary:SetHeight(138)
+
+    page.addonLabel = CreateText(page.summary, "GameFontNormal", "Addon Name", FONT_STYLES.sectionTitle)
+    page.addonLabel:SetPoint("TOPLEFT", 16, -16)
+    page.addonValue = CreateText(page.summary, "GameFontHighlight", addonTitle, FONT_STYLES.body)
+    page.addonValue:SetPoint("TOPLEFT", page.addonLabel, "TOPRIGHT", 90, 0)
+
+    page.versionLabel = CreateText(page.summary, "GameFontNormal", "Version", FONT_STYLES.sectionTitle)
+    page.versionLabel:SetPoint("TOPLEFT", page.addonLabel, "BOTTOMLEFT", 0, -12)
+    page.versionValue = CreateText(page.summary, "GameFontHighlight", version, FONT_STYLES.body)
+    page.versionValue:SetPoint("TOPLEFT", page.versionLabel, "TOPRIGHT", 90, 0)
+
+    page.commandsLabel = CreateText(page.summary, "GameFontNormal", "Slash Commands", FONT_STYLES.sectionTitle)
+    page.commandsLabel:SetPoint("TOPLEFT", page.versionLabel, "BOTTOMLEFT", 0, -12)
+    page.commandsValue = CreateText(page.summary, "GameFontHighlight", "/cg or /cursorglow", FONT_STYLES.body)
+    page.commandsValue:SetPoint("TOPLEFT", page.commandsLabel, "TOPRIGHT", 90, 0)
+
+    page.help = CreateSectionPanel(page.body, "Notes", "Use the General page for core addon toggles and the Cursors page to adjust per-state size and offset values. Appearance is scaffolded separately so visual options can be added incrementally without risking the current working behavior.")
+    page.help:SetPoint("TOPLEFT", page.summary, "BOTTOMLEFT", 0, -16)
+    page.help:SetPoint("TOPRIGHT", page.body, "TOPRIGHT", 0, -144)
+
+    page.RefreshControls = function()
+    end
+end
+
+------------------------------------------------------------------------------------
+-- PAGE SWITCHING
+------------------------------------------------------------------------------------
+local function SelectPage(self, pageKey)
+    local frame = self.configFrame
+    if not frame then
+        return
+    end
+
+    for key, page in pairs(frame.pages) do
+        local isSelected = key == pageKey
+        page:SetShown(isSelected)
+        if isSelected and page.RefreshControls then
+            page:RefreshControls()
+        end
+    end
+
+    for key, button in pairs(frame.navButtons) do
+        button:SetSelected(key == pageKey)
+    end
+
+    frame.currentPage = pageKey
+end
+
+------------------------------------------------------------------------------------
+-- RESIZE / MINIMUM SIZE HANDLING
+------------------------------------------------------------------------------------
+local function CreateResizeGrip(frame, onStop)
+    local grip = CreateFrame("Button", nil, frame)
+    grip:SetSize(16, 16)
+    grip:SetPoint("BOTTOMRIGHT", WINDOW_RESIZE_OFFSET_X, WINDOW_RESIZE_OFFSET_Y)
+
+    grip.texture = grip:CreateTexture(nil, "ARTWORK")
+    grip.texture:SetAllPoints()
+    grip.texture:SetTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
+
+    grip:SetScript("OnMouseDown", function(_, button)
+        if button ~= "LeftButton" then
+            return
+        end
+
+        frame:StartSizing("BOTTOMRIGHT")
+    end)
+
+    grip:SetScript("OnMouseUp", function()
+        frame:StopMovingOrSizing()
+        if onStop then
+            onStop()
+        end
+    end)
+
+    return grip
+end
+
+------------------------------------------------------------------------------------
+-- WINDOW CREATION
+------------------------------------------------------------------------------------
+local function CreateConfigFrame(self)
+    if self.configFrame then
+        return self.configFrame
+    end
+
+    local frame = CreateFrame("Frame", "CursorGlowConfigFrame", UIParent, "BasicFrameTemplateWithInset")
+    ApplyFrameSize(self, frame)
+    frame:SetPoint("CENTER")
+    frame:SetFrameStrata("HIGH")
+    frame:SetMovable(true)
+    frame:SetResizable(true)
+    frame:EnableMouse(true)
+    frame:RegisterForDrag("LeftButton")
+    frame:SetClampedToScreen(true)
+    frame:Hide()
+
+    if frame.SetMinResize then
+        frame:SetMinResize(PANEL_MIN_WIDTH, PANEL_MIN_HEIGHT)
+    end
+    if frame.SetResizeBounds then
+        frame:SetResizeBounds(PANEL_MIN_WIDTH, PANEL_MIN_HEIGHT)
+    end
+
+    ------------------------------------------------------------------------------------
+    -- BLIZZARD FRAME CHROME RESTORATION
+    ------------------------------------------------------------------------------------
+    frame:SetScript("OnDragStart", frame.StartMoving)
+    frame:SetScript("OnDragStop", function(panel)
+        panel:StopMovingOrSizing()
+        SaveFrameSize(self, panel)
+    end)
+
+    if frame.Bg then
+        frame.Bg:Hide()
+        frame.Bg:SetAlpha(0)
+    end
+    if frame.TopTileStreaks then
+        frame.TopTileStreaks:Show()
+        frame.TopTileStreaks:SetAlpha(1)
+    end
+    if frame.Inset and frame.Inset.Bg then
+        frame.Inset.Bg:Hide()
+        frame.Inset.Bg:SetAlpha(0)
+    end
+    if frame.Inset and frame.Inset.NineSlice then
+        frame.Inset.NineSlice:Show()
+    end
+    if frame.NineSlice then
+        frame.NineSlice:Show()
+    end
+    if frame.TitleBg then
+        frame.TitleBg:Show()
+    end
+    if frame.TitleText then
+        frame.TitleText:Show()
+        frame.TitleText:SetText("CursorGlow")
+        frame.TitleText:ClearAllPoints()
+        frame.TitleText:SetPoint("TOP", frame, "TOP", 0, -6)
+    end
+
+    ------------------------------------------------------------------------------------
+    -- CUSTOM BACKGROUND HOST / ATLAS BACKGROUND
+    ------------------------------------------------------------------------------------
+    frame.surfaceHost = CreateFrame("Frame", nil, frame)
+    frame.surfaceHost:SetPoint("TOPLEFT", frame, "TOPLEFT", 2, -22)
+    frame.surfaceHost:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -3, 3)
+
+    ------------------------------------------------------------------------------------
+    -- PRIMARY WINDOW BACKGROUND
+    ------------------------------------------------------------------------------------
+
+    local surfaceParent = frame.surfaceHost
+    frame.surfaceBase = surfaceParent:CreateTexture(nil, "BACKGROUND", nil, 0)
+    frame.surfaceBase:SetAllPoints(surfaceParent)
+    frame.surfaceBase:SetTexture("Interface\\Buttons\\WHITE8x8")
+    frame.surfaceBase:SetVertexColor(0, 0, 0, 0)
+
+    frame.surfaceAtlas = surfaceParent:CreateTexture(nil, "BACKGROUND", nil, 1)
+    frame.surfaceAtlas:SetAllPoints(surfaceParent)
+    -- Force atlas ABOVE Blizzard background layers
+    frame.surfaceAtlas:SetDrawLayer("ARTWORK", 0)
+
+    if frame.surfaceAtlas.SetAtlas then
+        frame.surfaceAtlas:SetAtlas("auctionhouse-background-index", false)
+        frame.surfaceAtlas:SetTexCoord(0, 1, 0, 1)
+        frame.surfaceAtlas:SetVertexColor(1, 1, 1, 1)
+    else
+        frame.surfaceAtlas:SetTexture("Interface\\Buttons\\WHITE8x8")
+        frame.surfaceAtlas:SetVertexColor(0.12, 0.12, 0.13, 1)
+    end
+
+    frame.surfaceOverlay = surfaceParent:CreateTexture(nil, "BORDER")
+    frame.surfaceOverlay:SetAllPoints(surfaceParent)
+    frame.surfaceOverlay:SetTexture("Interface\\Buttons\\WHITE8x8")
+    frame.surfaceOverlay:Hide()
+    
+    frame.surfaceTopFade = surfaceParent:CreateTexture(nil, "ARTWORK")
+    frame.surfaceTopFade:SetPoint("TOPLEFT", surfaceParent, "TOPLEFT", 0, 0)
+    frame.surfaceTopFade:SetPoint("TOPRIGHT", surfaceParent, "TOPRIGHT", 0, 0)
+    frame.surfaceTopFade:SetHeight(88)
+    frame.surfaceTopFade:SetTexture("Interface\\Buttons\\WHITE8x8")
+    frame.surfaceTopFade:Hide()
+    
+    frame.surfaceBottomFade = surfaceParent:CreateTexture(nil, "ARTWORK")
+    frame.surfaceBottomFade:SetPoint("BOTTOMLEFT", surfaceParent, "BOTTOMLEFT", 0, 0)
+    frame.surfaceBottomFade:SetPoint("BOTTOMRIGHT", surfaceParent, "BOTTOMRIGHT", 0, 0)
+    frame.surfaceBottomFade:SetHeight(90)
+    frame.surfaceBottomFade:SetTexture("Interface\\Buttons\\WHITE8x8")
+    frame.surfaceBottomFade:Hide()
+
+    frame:SetScript("OnShow", function(panel)
+        ApplyFrameSize(self, panel)
+        SelectPage(self, panel.currentPage or PAGES[1].key)
+    end)
+
+    frame:SetScript("OnHide", function(panel)
+        SaveFrameSize(self, panel)
+    end)
+
+    frame:SetScript("OnSizeChanged", function(panel, width, height)
+        local clampedWidth, clampedHeight = ClampFrameSize(width, height)
+        if not panel.enforcingSize and (math.abs(width - clampedWidth) > 0.5 or math.abs(height - clampedHeight) > 0.5) then
+            panel.enforcingSize = true
+            panel:SetSize(clampedWidth, clampedHeight)
+            panel.enforcingSize = false
+            return
+        end
+    end)
+
+    ------------------------------------------------------------------------------------
+    -- LEFT NAV
+    ------------------------------------------------------------------------------------
+    frame.navFrame = CreateFrame("Frame", nil, frame.Inset or frame)
+    frame.navFrame:SetPoint("TOPLEFT", frame.Inset or frame, "TOPLEFT", 12, -24)
+    frame.navFrame:SetPoint("BOTTOMLEFT", frame.Inset or frame, "BOTTOMLEFT", 12, 12)
+    frame.navFrame:SetWidth(NAV_WIDTH)
+    frame.navSeparator = frame.navFrame:CreateTexture(nil, "BORDER")
+    frame.navSeparator:SetColorTexture(1, 0.82, 0, 0.10)
+    frame.navSeparator:SetPoint("TOPLEFT", 0, -2)
+    frame.navSeparator:SetPoint("TOPRIGHT", 0, -2)
+    frame.navSeparator:SetHeight(1)
+
+    ------------------------------------------------------------------------------------
+    -- PAGE LAYOUT
+    ------------------------------------------------------------------------------------
+    frame.contentDivider = frame:CreateTexture(nil, "BORDER")
+    frame.contentDivider:SetColorTexture(1, 1, 1, 0.08)
+    frame.contentDivider:SetPoint("TOPLEFT", frame.navFrame, "TOPRIGHT", 12, 0)
+    frame.contentDivider:SetPoint("BOTTOMLEFT", frame.navFrame, "BOTTOMRIGHT", 12, 0)
+    frame.contentDivider:SetWidth(1)
+
+    frame.content = CreateFrame("Frame", nil, frame.Inset or frame)
+    frame.content:SetPoint("TOPLEFT", frame.navFrame, "TOPRIGHT", 24, 0)
+    frame.content:SetPoint("BOTTOMRIGHT", frame.Inset or frame, "BOTTOMRIGHT", -12, 12)
+
+    frame.navButtons = {}
+    frame.pages = {}
+
+    local previousButton
+    for _, pageData in ipairs(PAGES) do
+        local button = CreateNavButton(frame.navFrame, pageData.title)
+        button:SetWidth(NAV_WIDTH)
+
+        if previousButton then
+            button:SetPoint("TOPLEFT", previousButton, "BOTTOMLEFT", 0, -8)
+        else
+            button:SetPoint("TOPLEFT", frame.navFrame, "TOPLEFT", 0, -NAV_TOP_PADDING)
+        end
+
+        button:SetScript("OnClick", function()
+            SelectPage(self, pageData.key)
+        end)
+
+        frame.navButtons[pageData.key] = button
+        previousButton = button
+
+        local page = CreatePage(frame.content, pageData)
+        if pageData.key == "general" then
+            BuildGeneralPage(self, page)
+        elseif pageData.key == "cursors" then
+            BuildCursorsPage(self, page)
+        elseif pageData.key == "appearance" then
+            BuildAppearancePage(page)
+        elseif pageData.key == "about" then
+            BuildAboutPage(page)
+        end
+
+        frame.pages[pageData.key] = page
+    end
+
+    frame.resizeGrip = CreateResizeGrip(frame, function()
+        SaveFrameSize(self, frame)
+    end)
+    ------------------------------------------------------------------------------------
+    -- RESIZE GRIP LAYERING
+    ------------------------------------------------------------------------------------
+    frame.resizeGrip:SetFrameStrata(frame:GetFrameStrata())
+    frame.resizeGrip:SetFrameLevel(frame:GetFrameLevel() + WINDOW_RESIZE_FRAME_LEVEL_OFFSET)
+
+    self.configFrame = frame
+    SelectPage(self, PAGES[1].key)
+
+    return frame
 end
 
 function CursorGlow:SetupOptions()
-    if self.optionsInitialized then return end
-    AceConfig:RegisterOptionsTable("CursorGlow", BuildOptions(self))
     self.optionsInitialized = true
 end
 
 function CursorGlow:OpenConfig()
-    AceConfigDialog:Open("CursorGlow")
-
-    local frame = AceConfigDialog.OpenFrames["CursorGlow"]
-    if not frame then return end
-
-    local realFrame = frame.frame
-
-    realFrame:SetWidth(self.db.profile.windowWidth or 1000)
-    realFrame:SetHeight(self.db.profile.windowHeight or 600)
-
-    realFrame:SetResizable(true)
-
-    realFrame:SetScript("OnSizeChanged", function(_, w, h)
-        self.db.profile.windowWidth = w
-        self.db.profile.windowHeight = h
-    end)
+    local frame = CreateConfigFrame(self)
+    frame:Show()
+    if frame.Raise then
+        frame:Raise()
+    end
+    SelectPage(self, frame.currentPage or PAGES[1].key)
 end
