@@ -66,6 +66,13 @@ ns.Data["TOOLTIP_ROLE_KEYWORDS"] = {
         contains = {}
     },
 
+    BANKER = {
+        exact = {
+            ["Banker"] = true,
+        },
+        contains = {}
+    },
+
     SKINNABLE = {
         exact = {
             ["Skinnable"] = true,

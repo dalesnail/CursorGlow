@@ -25,6 +25,11 @@ function GG:OnInitialize()
 
             enabled = true,
             testMode = false,
+            useCustomColor = false,
+            colorR = 1,
+            colorG = 1,
+            colorB = 1,
+            desaturateTexture = false,
 
             -- DEFAULT
             offsetX = 15,
@@ -103,6 +108,12 @@ function GG:OnInitialize()
             mailboxSizeY = 65,
             mailboxOffsetX = 16,
             mailboxOffsetY = -13.5,
+
+            -- BANKER
+            bankerSizeX = 64,
+            bankerSizeY = 64,
+            bankerOffsetX = 13,
+            bankerOffsetY = -13,
 
             -- SKINNABLE
             skinnableSizeX = 69,

@@ -259,6 +259,10 @@ local function AddTooltipRoleCandidates(candidates, lines, name)
         table.insert(candidates, "MAILBOX")
     end
 
+    if HasTooltipRole(lines, "BANKER") then
+        table.insert(candidates, "BANKER")
+    end
+
     if HasTooltipRole(lines, "SKINNABLE") and PlayerHasSkinning() then
         table.insert(candidates, "SKINNABLE")
     end

@@ -107,6 +107,14 @@ ns.States = {
         offsetY = -13.5,
     },
 
+    BANKER = {
+        texture = "Interface\\AddOns\\GauntletGlow\\Media\\loot_glow.png",
+        sizeX = 64,
+        sizeY = 64,
+        offsetX = 13,
+        offsetY = -13,
+    },
+
     SKINNABLE = {
         texture = "Interface\\AddOns\\GauntletGlow\\Media\\skinnable_glow.png",
         sizeX = 69,
@@ -155,6 +163,7 @@ ns.StatePriority = {
     INNKEEPER = 84,
     STABLEMASTER = 83,
     MAILBOX = 82,
+    BANKER = 81.75,
     VENDOR = 81,
     REPAIR_VENDOR = 81.5,
     AUTOLOOT = 85,

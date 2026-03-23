@@ -82,6 +82,7 @@ local CURSOR_STATE_ORDER = {
     "INNKEEPER",
     "STABLEMASTER",
     "MAILBOX",
+    "BANKER",
     "SKINNABLE",
     "VENDOR",
     "SELL_ITEM",
@@ -92,6 +93,7 @@ local CURSOR_STATE_LABELS = {
     AUTOLOOT = "Auto Loot",
     FLIGHTMASTER = "Flight Master",
     STABLEMASTER = "Stable Master",
+    BANKER = "Banker",
     SELL_ITEM = "Sell Item",
     REPAIR_VENDOR = "Repair Vendor",
 }
@@ -174,6 +176,12 @@ local CURSOR_STATE_CONFIG = {
         heightKey = "mailboxSizeY",
         offsetXKey = "mailboxOffsetX",
         offsetYKey = "mailboxOffsetY",
+    },
+    BANKER = {
+        widthKey = "bankerSizeX",
+        heightKey = "bankerSizeY",
+        offsetXKey = "bankerOffsetX",
+        offsetYKey = "bankerOffsetY",
     },
     SKINNABLE = {
         widthKey = "skinnableSizeX",
@@ -1085,27 +1093,315 @@ local function CreateSectionPanel(parent, title, bodyText)
 
     return panel
 end
+
+local function GetAppearanceProfile(self)
+    return self and self.db and self.db.profile or nil
+end
+
+local function GetAppearanceCustomColorEnabled(self)
+    local profile = GetAppearanceProfile(self)
+    return profile and profile.useCustomColor or false
+end
+
+local function SetAppearanceCustomColorEnabled(self, enabled)
+    local profile = GetAppearanceProfile(self)
+    if not profile then
+        return
+    end
+
+    profile.useCustomColor = enabled and true or false
+
+    if self.RefreshGlowAppearance then
+        self:RefreshGlowAppearance()
+    end
+end
+
+local function GetAppearanceColor(self)
+    local profile = GetAppearanceProfile(self)
+    if not profile then
+        return 1, 1, 1
+    end
+
+    return profile.colorR or 1, profile.colorG or 1, profile.colorB or 1
+end
+
+local function SetAppearanceColor(self, r, g, b)
+    local profile = GetAppearanceProfile(self)
+    if not profile then
+        return
+    end
+
+    profile.colorR = r or 1
+    profile.colorG = g or 1
+    profile.colorB = b or 1
+
+    if self.RefreshGlowAppearance then
+        self:RefreshGlowAppearance()
+    end
+end
+
+local function GetAppearanceDesaturateEnabled(self)
+    local profile = GetAppearanceProfile(self)
+    return profile and profile.desaturateTexture or false
+end
+
+local function SetAppearanceDesaturateEnabled(self, enabled)
+    local profile = GetAppearanceProfile(self)
+    if not profile then
+        return
+    end
+
+    profile.desaturateTexture = enabled and true or false
+
+    if self.RefreshGlowAppearance then
+        self:RefreshGlowAppearance()
+    end
+end
+
+local function CreateInlineCheckbox(parent, title)
+    local row = CreateFrame("Frame", nil, parent)
+    row:SetHeight(26)
+
+    row.check = CreateFrame("CheckButton", nil, row, "UICheckButtonTemplate")
+    row.check:SetPoint("LEFT", 0, 0)
+
+    row.label = CreateText(row, "GameFontNormal", title, FONT_STYLES.sectionTitle)
+    row.label:SetPoint("LEFT", row.check, "RIGHT", 6, -2)
+    row.label:SetPoint("RIGHT", row, "RIGHT", 0, 0)
+    row.label:SetJustifyV("MIDDLE")
+
+    return row
+end
+
+local function SetInlineCheckboxEnabled(row, enabled)
+    if not row then
+        return
+    end
+
+    if enabled then
+        row.check:Enable()
+    else
+        row.check:Disable()
+    end
+
+    StyleText(row.label, enabled and FONT_STYLES.sectionTitle or FONT_STYLES.muted)
+    row:SetAlpha(enabled and 1 or 0.6)
+end
+
+local function CreateColorSwatchButton(parent)
+    local button = CreateFrame("Button", nil, parent, BACKDROP_TEMPLATE)
+    button:SetSize(26, 26)
+
+    if button.SetBackdrop then
+        button:SetBackdrop({
+            bgFile = "Interface\\Buttons\\WHITE8x8",
+            edgeFile = "Interface\\Buttons\\WHITE8x8",
+            edgeSize = 1,
+            insets = { left = 1, right = 1, top = 1, bottom = 1 },
+        })
+    end
+
+    if button.SetBackdropColor then
+        button:SetBackdropColor(0, 0, 0, 0.35)
+    end
+
+    button.swatch = button:CreateTexture(nil, "ARTWORK")
+    button.swatch:SetPoint("TOPLEFT", 3, -3)
+    button.swatch:SetPoint("BOTTOMRIGHT", -3, 3)
+    button.swatch:SetTexture("Interface\\Buttons\\WHITE8x8")
+
+    button.highlight = button:CreateTexture(nil, "HIGHLIGHT")
+    button.highlight:SetAllPoints()
+    button.highlight:SetTexture("Interface\\Buttons\\WHITE8x8")
+    button.highlight:SetVertexColor(1, 1, 1, 0.08)
+
+    function button:SetSwatchColor(r, g, b)
+        self.swatch:SetVertexColor(r or 1, g or 1, b or 1)
+    end
+
+    function button:SetEnabledState(enabled)
+        if enabled then
+            self:Enable()
+            self:SetAlpha(1)
+            if self.SetBackdropBorderColor then
+                self:SetBackdropBorderColor(0.88, 0.75, 0.30, 0.80)
+            end
+        else
+            self:Disable()
+            self:SetAlpha(0.45)
+            if self.SetBackdropBorderColor then
+                self:SetBackdropBorderColor(0.44, 0.40, 0.32, 0.55)
+            end
+        end
+    end
+
+    button:SetEnabledState(true)
+
+    return button
+end
+
+local function GetColorDataRGB(colorData)
+    if type(colorData) == "table" then
+        local r = colorData.r or colorData.red or colorData[1]
+        local g = colorData.g or colorData.green or colorData[2]
+        local b = colorData.b or colorData.blue or colorData[3]
+
+        if r ~= nil and g ~= nil and b ~= nil then
+            return r, g, b
+        end
+    end
+
+    return nil
+end
+
+local function GetColorPickerRGB(colorData)
+    local r, g, b = GetColorDataRGB(colorData)
+    if r ~= nil and g ~= nil and b ~= nil then
+        return r, g, b
+    end
+
+    if ColorPickerFrame and ColorPickerFrame.GetColorRGB then
+        return ColorPickerFrame:GetColorRGB()
+    end
+
+    return nil
+end
+
+local function OpenAppearanceColorPicker(self, onChanged)
+    if not ColorPickerFrame then
+        return
+    end
+
+    local initialR, initialG, initialB = GetAppearanceColor(self)
+
+    local function ApplyPickerColor(colorData)
+        local r, g, b = GetColorPickerRGB(colorData)
+        if r == nil or g == nil or b == nil then
+            return
+        end
+
+        SetAppearanceColor(self, r, g, b)
+
+        if onChanged then
+            onChanged()
+        end
+    end
+
+    local function CancelPickerColor(previousValues)
+        local r, g, b = GetColorDataRGB(previousValues)
+        if r == nil or g == nil or b == nil then
+            r, g, b = initialR, initialG, initialB
+        end
+
+        SetAppearanceColor(self, r, g, b)
+
+        if onChanged then
+            onChanged()
+        end
+    end
+
+    if ColorPickerFrame.SetupColorPickerAndShow then
+        local info = {}
+        info.r = initialR
+        info.g = initialG
+        info.b = initialB
+        info.hasOpacity = false
+        info.swatchFunc = function(...)
+            ApplyPickerColor(select(1, ...))
+        end
+        info.cancelFunc = function(previousValues)
+            CancelPickerColor(previousValues)
+        end
+        ColorPickerFrame:SetupColorPickerAndShow(info)
+        return
+    end
+
+    ColorPickerFrame.func = function(...)
+        ApplyPickerColor(select(1, ...))
+    end
+    ColorPickerFrame.opacityFunc = nil
+    ColorPickerFrame.cancelFunc = function(previousValues)
+        CancelPickerColor(previousValues)
+    end
+    ColorPickerFrame.hasOpacity = false
+    ColorPickerFrame.opacity = 1
+    ColorPickerFrame.previousValues = { r = initialR, g = initialG, b = initialB }
+    ColorPickerFrame:SetColorRGB(initialR, initialG, initialB)
+    ColorPickerFrame:Hide()
+    ColorPickerFrame:Show()
+end
+
 ------------------------------------------------------------------------------------
 -- APPEARANCE PAGE BUILD
 ------------------------------------------------------------------------------------
-local function BuildAppearancePage(page)
-    page.intro = CreateText(page.body, "GameFontHighlight", " ", FONT_STYLES.body)
+local function BuildAppearancePage(self, page)
+    page.intro = CreateText(page.body, "GameFontHighlight", "Global appearance controls apply to every cursor state without changing its texture, size, or offset rules.", FONT_STYLES.body)
     page.intro:SetPoint("TOPLEFT", 0, 0)
     page.intro:SetPoint("TOPRIGHT", 0, 0)
 
-    page.alphaSection = CreateSectionPanel(page.body, "Glow Alpha", "Placeholder -  to be added later")
-    page.alphaSection:SetPoint("TOPLEFT", page.intro, "BOTTOMLEFT", 0, -18)
-    page.alphaSection:SetPoint("TOPRIGHT", page.body, "TOPRIGHT", 0, -58)
-
-    page.recolorSection = CreateSectionPanel(page.body, "Recoloring", "Placeholder -  to be added later")
-    page.recolorSection:SetPoint("TOPLEFT", page.alphaSection, "BOTTOMLEFT", 0, -14)
+    page.recolorSection = CreateSectionPanel(page.body, "Color", "")
+    page.recolorSection:SetPoint("TOPLEFT", page.intro, "BOTTOMLEFT", 0, -18)
     page.recolorSection:SetPoint("TOPRIGHT", page.body, "TOPRIGHT", 0, -190)
+    page.recolorSection:SetHeight(168)
+    page.recolorSection.bodyText:SetText("")
+    page.recolorSection.bodyText:Hide()
 
-    page.previewSection = CreateSectionPanel(page.body, "Preview Behavior", "Placeholder -  to be added later")
-    page.previewSection:SetPoint("TOPLEFT", page.recolorSection, "BOTTOMLEFT", 0, -14)
-    page.previewSection:SetPoint("TOPRIGHT", page.body, "TOPRIGHT", 0, -322)
+    page.recolorControls = CreateFrame("Frame", nil, page.recolorSection)
+    page.recolorControls:SetPoint("TOPLEFT", page.recolorSection.separator, "BOTTOMLEFT", 0, -14)
+    page.recolorControls:SetPoint("TOPRIGHT", page.recolorSection.separator, "BOTTOMRIGHT", 0, -14)
+    page.recolorControls:SetHeight(28)
 
-    page.RefreshControls = function()
+    page.customColorToggle = CreateInlineCheckbox(page.recolorControls, "Custom Color")
+    page.customColorToggle:SetPoint("TOPLEFT", 0, 0)
+    page.customColorToggle:SetWidth(180)
+    page.customColorToggle.check:SetScript("OnClick", function(button)
+        SetAppearanceCustomColorEnabled(self, button:GetChecked())
+        page:RefreshControls()
+    end)
+
+    page.colorSwatch = CreateColorSwatchButton(page.recolorControls)
+    page.colorSwatch:SetPoint("LEFT", page.customColorToggle, "RIGHT", 8, 0)
+    page.colorSwatch:SetScript("OnClick", function()
+        OpenAppearanceColorPicker(self, function()
+            page:RefreshControls()
+        end)
+    end)
+
+    page.desaturateToggle = CreateInlineCheckbox(page.recolorControls, "Desaturate")
+    page.desaturateToggle:SetPoint("TOPRIGHT", 0, 0)
+    page.desaturateToggle:SetWidth(150)
+    page.desaturateToggle.check:SetScript("OnClick", function(button)
+        SetAppearanceDesaturateEnabled(self, button:GetChecked())
+        page:RefreshControls()
+    end)
+
+    page.resetColorButton = CreateFrame("Button", nil, page.recolorSection, "UIPanelButtonTemplate")
+    page.resetColorButton:SetSize(100, 22)
+    page.resetColorButton:SetText("Reset Color")
+    page.resetColorButton:SetPoint("TOPLEFT", page.recolorControls, "BOTTOMLEFT", 2, -14)
+    page.resetColorButton:SetScript("OnClick", function()
+        SetAppearanceColor(self, 1, 1, 1)
+        page:RefreshControls()
+    end)
+
+    page.alphaSection = CreateSectionPanel(page.body, "Glow Alpha", "Brightness and alpha controls are planned for a later pass. This pass only adds shared color and desaturation settings.")
+    page.alphaSection:SetPoint("TOPLEFT", page.recolorSection, "BOTTOMLEFT", 0, -14)
+    page.alphaSection:SetPoint("TOPRIGHT", page.body, "TOPRIGHT", 0, -190)
+
+    page.previewSection = CreateSectionPanel(page.body, "Preview Behavior", "Appearance changes update the active glow immediately and still use the existing state priority, texture swapping, size and offset settings, and test mode behavior.")
+    page.previewSection:SetPoint("TOPLEFT", page.alphaSection, "BOTTOMLEFT", 0, -14)
+    page.previewSection:SetPoint("TOPRIGHT", page.alphaSection, "BOTTOMRIGHT", 0, -14)
+
+    page.RefreshControls = function(currentPage)
+        local useCustomColor = GetAppearanceCustomColorEnabled(self)
+        local colorR, colorG, colorB = GetAppearanceColor(self)
+
+        currentPage.customColorToggle.check:SetChecked(useCustomColor)
+        currentPage.colorSwatch:SetSwatchColor(colorR, colorG, colorB)
+        currentPage.colorSwatch:SetEnabledState(useCustomColor)
+
+        currentPage.desaturateToggle.check:SetChecked(GetAppearanceDesaturateEnabled(self))
+        SetInlineCheckboxEnabled(currentPage.desaturateToggle, useCustomColor)
     end
 end
 
@@ -1556,7 +1852,7 @@ local function CreateConfigFrame(self)
         elseif pageData.key == "cursors" then
             BuildCursorsPage(self, page)
         elseif pageData.key == "appearance" then
-            BuildAppearancePage(page)
+            BuildAppearancePage(self, page)
         elseif pageData.key == "about" then
             BuildAboutPage(page)
         end

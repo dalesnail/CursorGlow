@@ -4,6 +4,35 @@ local GG = ns.GauntletGlow
 local GetCursorPosition = GetCursorPosition
 local UIParent = UIParent
 
+local function SetTextureDesaturation(texture, enabled)
+    if not texture then
+        return
+    end
+
+    if texture.SetDesaturated then
+        texture:SetDesaturated(enabled and true or false)
+    elseif texture.SetDesaturation then
+        texture:SetDesaturation(enabled and 1 or 0)
+    end
+end
+
+function GG:RefreshGlowAppearance()
+    local glow = self.gauntletGlow
+    local tex = glow and glow.texture
+    local profile = self.db and self.db.profile
+    if not tex or not profile then
+        return
+    end
+
+    if profile.useCustomColor then
+        tex:SetVertexColor(profile.colorR or 1, profile.colorG or 1, profile.colorB or 1)
+        SetTextureDesaturation(tex, profile.desaturateTexture)
+    else
+        tex:SetVertexColor(1, 1, 1)
+        SetTextureDesaturation(tex, false)
+    end
+end
+
 function GG:CreateGauntletGlow()
     local f = CreateFrame("Frame", "GauntletGlowFrame", UIParent)
     f:SetFrameStrata("TOOLTIP")
@@ -16,6 +45,7 @@ function GG:CreateGauntletGlow()
     f:Hide()
 
     self.gauntletGlow = f
+    self:RefreshGlowAppearance()
 end
 
 function GG:ApplyState(stateName, force)
@@ -26,6 +56,7 @@ function GG:ApplyState(stateName, force)
     if not state then return end
 
     self.gauntletGlow.texture:SetTexture(state.texture)
+    self:RefreshGlowAppearance()
 
     local sizeX = state.sizeX
     local sizeY = state.sizeY
@@ -104,6 +135,12 @@ function GG:ApplyState(stateName, force)
         offsetX = self.db.profile.mailboxOffsetX or offsetX
         offsetY = self.db.profile.mailboxOffsetY or offsetY
 
+    elseif stateName == "BANKER" then
+        sizeX = self.db.profile.bankerSizeX or sizeX
+        sizeY = self.db.profile.bankerSizeY or sizeY
+        offsetX = self.db.profile.bankerOffsetX or offsetX
+        offsetY = self.db.profile.bankerOffsetY or offsetY
+
     elseif stateName == "SKINNABLE" then
         sizeX = self.db.profile.skinnableSizeX or sizeX
         sizeY = self.db.profile.skinnableSizeY or sizeY
@@ -123,10 +160,10 @@ function GG:ApplyState(stateName, force)
         offsetY = self.db.profile.repairVendorOffsetY or offsetY
 
     elseif stateName == "SELL_ITEM" then
-        sizeX = self.db.profile.SellItemSizeX or sizeX
-        sizeY = self.db.profile.SellItemSizeY or sizeY
-        offsetX = self.db.profile.SellItemOffsetX or offsetX
-        offsetY = self.db.profile.SellItemOffsetY or offsetY
+        sizeX = self.db.profile.sellItemSizeX or sizeX
+        sizeY = self.db.profile.sellItemSizeY or sizeY
+        offsetX = self.db.profile.sellItemOffsetX or offsetX
+        offsetY = self.db.profile.sellItemOffsetY or offsetY
 
     else
         sizeX = self.db.profile.sizeX or sizeX
