@@ -1,151 +1,59 @@
 local ADDON_NAME, ns = ...
 local GG = ns.GauntletGlow
 
+local cursorStateDefaults = ns.CursorStateDefaults or {}
+
+local function CreateState(texture, stateKey)
+    local defaults = cursorStateDefaults[stateKey] or cursorStateDefaults.DEFAULT or {}
+
+    return {
+        texture = texture,
+        sizeX = defaults.sizeX,
+        sizeY = defaults.sizeY,
+        offsetX = defaults.offsetX,
+        offsetY = defaults.offsetY,
+    }
+end
+
 ns.States = {
 
-    DEFAULT = {
-        texture = "Interface\\AddOns\\GauntletGlow\\Media\\cursor_glow_default.png",
-        sizeX = 68,
-        sizeY = 65,
-        offsetX = 15,
-        offsetY = -13.5,
-    },
+    DEFAULT = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\cursor_glow_default.png", "DEFAULT"),
 
-    ATTACK = {
-        texture = "Interface\\AddOns\\GauntletGlow\\Media\\sword_glow_default.png",
-        sizeX = 70,
-        sizeY = 70,
-        offsetX = 16,
-        offsetY = -16,
-    },
+    ATTACK = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\sword_glow_default.png", "ATTACK"),
 
-    LOOT = {
-        texture = "Interface\\AddOns\\GauntletGlow\\Media\\loot_glow.png",
-        sizeX = 64,
-        sizeY = 64,
-        offsetX = 13,
-        offsetY = -13,
-    },
+    LOOT = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\loot_glow.png", "LOOT"),
 
-    AUTOLOOT = {
-        texture = "Interface\\AddOns\\GauntletGlow\\Media\\autoloot_glow.png",
-        sizeX = 68,
-        sizeY = 68,
-        offsetX = 15,
-        offsetY = -15,
-    },
+    AUTOLOOT = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\autoloot_glow.png", "AUTOLOOT"),
 
-    HERBALISM = {
-        texture = "Interface\\AddOns\\GauntletGlow\\Media\\herb_glow.png",
-        sizeX = 70,
-        sizeY = 70,
-        offsetX = 16,
-        offsetY = -16,
-    },
+    HERBALISM = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\herb_glow.png", "HERBALISM"),
 
-    MINING = {
-        texture = "Interface\\AddOns\\GauntletGlow\\Media\\mining_glow.png",
-        sizeX = 65,
-        sizeY = 70,
-        offsetX = 13.5,
-        offsetY = -16,
-    },
+    MINING = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\mining_glow.png", "MINING"),
 
-    FLIGHTMASTER = {
-        texture = "Interface\\AddOns\\GauntletGlow\\Media\\flight_glow.png",
-        sizeX = 70,
-        sizeY = 70,
-        offsetX = 16,
-        offsetY = -16,
-    },
+    FLIGHTMASTER = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\flight_glow.png", "FLIGHTMASTER"),
 
-    BATTLEMASTER = {
-        texture = "Interface\\AddOns\\GauntletGlow\\Media\\battlemaster_glow.png",
-        sizeX = 69,
-        sizeY = 70,
-        offsetX = 16,
-        offsetY = -16,
-    },
+    BATTLEMASTER = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\battlemaster_glow.png", "BATTLEMASTER"),
 
-    TRAINER = {
-        texture = "Interface\\AddOns\\GauntletGlow\\Media\\trainer_glow.png",
-        sizeX = 69,
-        sizeY = 70,
-        offsetX = 16,
-        offsetY = -15.5,
-    },
+    TRAINER = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\trainer_glow.png", "TRAINER"),
 
-    DIRECTIONS_GUARD = {
-        texture = "Interface\\AddOns\\GauntletGlow\\Media\\directions_glow.png",
-        sizeX = 68,
-        sizeY = 69,
-        offsetX = 15.5,
-        offsetY = -15,
-    },
+    SPEAK = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\speak_glow.png", "SPEAK"),
 
-    INNKEEPER = {
-        texture = "Interface\\AddOns\\GauntletGlow\\Media\\innkeeper_glow.png",
-        sizeX = 66,
-        sizeY = 66,
-        offsetX = 14,
-        offsetY = -14,
-    },
+    DIRECTIONS_GUARD = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\directions_glow.png", "DIRECTIONS_GUARD"),
 
-    STABLEMASTER = {
-        texture = "Interface\\AddOns\\GauntletGlow\\Media\\stablemaster_glow.png",
-        sizeX = 69,
-        sizeY = 69,
-        offsetX = 15.5,
-        offsetY = -15.5,
-    },
+    INNKEEPER = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\innkeeper_glow.png", "INNKEEPER"),
 
-    MAILBOX = {
-        texture = "Interface\\AddOns\\GauntletGlow\\Media\\mail_glow.png",
-        sizeX = 70,
-        sizeY = 65,
-        offsetX = 16,
-        offsetY = -13.5,
-    },
+    STABLEMASTER = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\stablemaster_glow.png", "STABLEMASTER"),
 
-    BANKER = {
-        texture = "Interface\\AddOns\\GauntletGlow\\Media\\loot_glow.png",
-        sizeX = 64,
-        sizeY = 64,
-        offsetX = 13,
-        offsetY = -13,
-    },
+    MAILBOX = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\mail_glow.png", "MAILBOX"),
 
-    SKINNABLE = {
-        texture = "Interface\\AddOns\\GauntletGlow\\Media\\skinnable_glow.png",
-        sizeX = 69,
-        sizeY = 66,
-        offsetX = 16,
-        offsetY = -16,
-    },
+    BANKER = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\loot_glow.png", "BANKER"),
 
-    VENDOR = {
-        texture = "Interface\\AddOns\\GauntletGlow\\Media\\loot_glow.png",
-        sizeX = 64,
-        sizeY = 64,
-        offsetX = 13,
-        offsetY = -13,
-    },
+    SKINNABLE = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\skinnable_glow.png", "SKINNABLE"),
 
-    SELL_ITEM = {
-        texture = "Interface\\AddOns\\GauntletGlow\\Media\\loot_glow.png",
-        sizeX = 64,
-        sizeY = 64,
-        offsetX = 13,
-        offsetY = -13,
-    },
+    VENDOR = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\loot_glow.png", "VENDOR"),
 
-    REPAIR_VENDOR = {
-        texture = "Interface\\AddOns\\GauntletGlow\\Media\\repair_glow.png",
-        sizeX = 67,
-        sizeY = 68,
-        offsetX = 14.5,
-        offsetY = -15,
-    },
+    SELL_ITEM = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\loot_glow.png", "SELL_ITEM"),
+
+    REPAIR_VENDOR = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\repair_glow.png", "REPAIR_VENDOR"),
 }
 
 -- ############################################################
@@ -159,6 +67,7 @@ ns.StatePriority = {
     FLIGHTMASTER = 90,
     BATTLEMASTER = 88,
     TRAINER = 87,
+    SPEAK = 86.5,
     DIRECTIONS_GUARD = 86,
     INNKEEPER = 84,
     STABLEMASTER = 83,

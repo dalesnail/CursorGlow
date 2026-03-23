@@ -126,6 +126,12 @@ function GG:ApplyState(stateName, force)
         offsetX = self.db.profile.trainerOffsetX or offsetX
         offsetY = self.db.profile.trainerOffsetY or offsetY
 
+    elseif stateName == "SPEAK" then
+        sizeX = self.db.profile.speakSizeX or sizeX
+        sizeY = self.db.profile.speakSizeY or sizeY
+        offsetX = self.db.profile.speakOffsetX or offsetX
+        offsetY = self.db.profile.speakOffsetY or offsetY
+
     elseif stateName == "DIRECTIONS_GUARD" then
         sizeX = self.db.profile.directionsGuardSizeX or sizeX
         sizeY = self.db.profile.directionsGuardSizeY or sizeY

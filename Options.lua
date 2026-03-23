@@ -78,6 +78,7 @@ local CURSOR_STATE_ORDER = {
     "FLIGHTMASTER",
     "BATTLEMASTER",
     "TRAINER",
+    "SPEAK",
     "DIRECTIONS_GUARD",
     "INNKEEPER",
     "STABLEMASTER",
@@ -94,6 +95,7 @@ local CURSOR_STATE_LABELS = {
     FLIGHTMASTER = "Flight Master",
     STABLEMASTER = "Stable Master",
     BANKER = "Banker",
+    SPEAK = "Speak",
     SELL_ITEM = "Sell Item",
     REPAIR_VENDOR = "Repair Vendor",
 }
@@ -152,6 +154,12 @@ local CURSOR_STATE_CONFIG = {
         heightKey = "trainerSizeY",
         offsetXKey = "trainerOffsetX",
         offsetYKey = "trainerOffsetY",
+    },
+    SPEAK = {
+        widthKey = "speakSizeX",
+        heightKey = "speakSizeY",
+        offsetXKey = "speakOffsetX",
+        offsetYKey = "speakOffsetY",
     },
     DIRECTIONS_GUARD = {
         widthKey = "directionsGuardSizeX",
@@ -214,6 +222,13 @@ local CURSOR_SLIDER_DEFS = {
     { id = "height", label = "Height", min = 16, max = 128, step = 1 },
     { id = "offsetX", label = "Offset X", min = -32, max = 32, step = 0.5 },
     { id = "offsetY", label = "Offset Y", min = -32, max = 32, step = 0.5 },
+}
+
+local CURSOR_DEFAULT_FIELDS = {
+    width = "sizeX",
+    height = "sizeY",
+    offsetX = "offsetX",
+    offsetY = "offsetY",
 }
 
 local sliderNameIndex = 0
@@ -660,23 +675,14 @@ local function GetCursorStateDefaultValue(self, stateKey, controlId)
         return 0
     end
 
-    local profileDefaults = self and self.db and self.db.defaults and self.db.defaults.profile
-    local profileKey = config[controlId .. "Key"]
-    if profileDefaults and profileDefaults[profileKey] ~= nil then
-        return profileDefaults[profileKey]
+    local defaultField = CURSOR_DEFAULT_FIELDS[controlId]
+    if not defaultField then
+        return 0
     end
 
-    local state = ns.States and ns.States[stateKey]
-    if state then
-        if controlId == "width" then
-            return state.sizeX or 0
-        elseif controlId == "height" then
-            return state.sizeY or 0
-        elseif controlId == "offsetX" then
-            return state.offsetX or 0
-        elseif controlId == "offsetY" then
-            return state.offsetY or 0
-        end
+    local stateDefaults = ns.CursorStateDefaults and (ns.CursorStateDefaults[stateKey] or ns.CursorStateDefaults.DEFAULT)
+    if stateDefaults and stateDefaults[defaultField] ~= nil then
+        return stateDefaults[defaultField]
     end
 
     return 0

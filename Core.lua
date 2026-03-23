@@ -5,6 +5,268 @@
 local ADDON_NAME, ns = ...
 local GG = ns.GauntletGlow
 
+ns.CursorStateDefaults = ns.CursorStateDefaults or {
+    DEFAULT = {
+        sizeX = 68,
+        sizeY = 65,
+        offsetX = 15,
+        offsetY = -13.5,
+    },
+    ATTACK = {
+        sizeX = 70,
+        sizeY = 70,
+        offsetX = 16,
+        offsetY = -16,
+    },
+    LOOT = {
+        sizeX = 64,
+        sizeY = 64,
+        offsetX = 13,
+        offsetY = -13,
+    },
+    AUTOLOOT = {
+        sizeX = 68,
+        sizeY = 68,
+        offsetX = 15,
+        offsetY = -15,
+    },
+    HERBALISM = {
+        sizeX = 70,
+        sizeY = 70,
+        offsetX = 16,
+        offsetY = -16,
+    },
+    MINING = {
+        sizeX = 65,
+        sizeY = 70,
+        offsetX = 13.5,
+        offsetY = -16,
+    },
+    FLIGHTMASTER = {
+        sizeX = 70,
+        sizeY = 70,
+        offsetX = 16,
+        offsetY = -16,
+    },
+    BATTLEMASTER = {
+        sizeX = 69,
+        sizeY = 70,
+        offsetX = 16,
+        offsetY = -16,
+    },
+    TRAINER = {
+        sizeX = 69,
+        sizeY = 70,
+        offsetX = 16,
+        offsetY = -15.5,
+    },
+    SPEAK = {
+        sizeX = 67,
+        sizeY = 64,
+        offsetX = 14.5,
+        offsetY = -13,
+    },
+    DIRECTIONS_GUARD = {
+        sizeX = 68,
+        sizeY = 69,
+        offsetX = 15.5,
+        offsetY = -15,
+    },
+    INNKEEPER = {
+        sizeX = 66,
+        sizeY = 66,
+        offsetX = 14,
+        offsetY = -14,
+    },
+    STABLEMASTER = {
+        sizeX = 69,
+        sizeY = 69,
+        offsetX = 15.5,
+        offsetY = -15.5,
+    },
+    MAILBOX = {
+        sizeX = 70,
+        sizeY = 65,
+        offsetX = 16,
+        offsetY = -13.5,
+    },
+    BANKER = {
+        sizeX = 64,
+        sizeY = 64,
+        offsetX = 13,
+        offsetY = -13,
+    },
+    SKINNABLE = {
+        sizeX = 69,
+        sizeY = 66,
+        offsetX = 16,
+        offsetY = -16,
+    },
+    VENDOR = {
+        sizeX = 64,
+        sizeY = 64,
+        offsetX = 13,
+        offsetY = -13,
+    },
+    SELL_ITEM = {
+        sizeX = 64,
+        sizeY = 64,
+        offsetX = 13,
+        offsetY = -13,
+    },
+    REPAIR_VENDOR = {
+        sizeX = 67,
+        sizeY = 68,
+        offsetX = 14.5,
+        offsetY = -15,
+    },
+}
+
+local CURSOR_STATE_PROFILE_KEYS = {
+    DEFAULT = {
+        sizeX = "sizeX",
+        sizeY = "sizeY",
+        offsetX = "offsetX",
+        offsetY = "offsetY",
+    },
+    ATTACK = {
+        sizeX = "swordSizeX",
+        sizeY = "swordSizeY",
+        offsetX = "swordOffsetX",
+        offsetY = "swordOffsetY",
+    },
+    LOOT = {
+        sizeX = "lootSizeX",
+        sizeY = "lootSizeY",
+        offsetX = "lootOffsetX",
+        offsetY = "lootOffsetY",
+    },
+    AUTOLOOT = {
+        sizeX = "autoLootSizeX",
+        sizeY = "autoLootSizeY",
+        offsetX = "autoLootOffsetX",
+        offsetY = "autoLootOffsetY",
+    },
+    HERBALISM = {
+        sizeX = "herbSizeX",
+        sizeY = "herbSizeY",
+        offsetX = "herbOffsetX",
+        offsetY = "herbOffsetY",
+    },
+    MINING = {
+        sizeX = "miningSizeX",
+        sizeY = "miningSizeY",
+        offsetX = "miningOffsetX",
+        offsetY = "miningOffsetY",
+    },
+    FLIGHTMASTER = {
+        sizeX = "flightMasterSizeX",
+        sizeY = "flightMasterSizeY",
+        offsetX = "flightMasterOffsetX",
+        offsetY = "flightMasterOffsetY",
+    },
+    BATTLEMASTER = {
+        sizeX = "battlemasterSizeX",
+        sizeY = "battlemasterSizeY",
+        offsetX = "battlemasterOffsetX",
+        offsetY = "battlemasterOffsetY",
+    },
+    TRAINER = {
+        sizeX = "trainerSizeX",
+        sizeY = "trainerSizeY",
+        offsetX = "trainerOffsetX",
+        offsetY = "trainerOffsetY",
+    },
+    SPEAK = {
+        sizeX = "speakSizeX",
+        sizeY = "speakSizeY",
+        offsetX = "speakOffsetX",
+        offsetY = "speakOffsetY",
+    },
+    DIRECTIONS_GUARD = {
+        sizeX = "directionsGuardSizeX",
+        sizeY = "directionsGuardSizeY",
+        offsetX = "directionsGuardOffsetX",
+        offsetY = "directionsGuardOffsetY",
+    },
+    INNKEEPER = {
+        sizeX = "innkeeperSizeX",
+        sizeY = "innkeeperSizeY",
+        offsetX = "innkeeperOffsetX",
+        offsetY = "innkeeperOffsetY",
+    },
+    STABLEMASTER = {
+        sizeX = "stableMasterSizeX",
+        sizeY = "stableMasterSizeY",
+        offsetX = "stableMasterOffsetX",
+        offsetY = "stableMasterOffsetY",
+    },
+    MAILBOX = {
+        sizeX = "mailboxSizeX",
+        sizeY = "mailboxSizeY",
+        offsetX = "mailboxOffsetX",
+        offsetY = "mailboxOffsetY",
+    },
+    BANKER = {
+        sizeX = "bankerSizeX",
+        sizeY = "bankerSizeY",
+        offsetX = "bankerOffsetX",
+        offsetY = "bankerOffsetY",
+    },
+    SKINNABLE = {
+        sizeX = "skinnableSizeX",
+        sizeY = "skinnableSizeY",
+        offsetX = "skinnableOffsetX",
+        offsetY = "skinnableOffsetY",
+    },
+    VENDOR = {
+        sizeX = "vendorSizeX",
+        sizeY = "vendorSizeY",
+        offsetX = "vendorOffsetX",
+        offsetY = "vendorOffsetY",
+    },
+    SELL_ITEM = {
+        sizeX = "sellItemSizeX",
+        sizeY = "sellItemSizeY",
+        offsetX = "sellItemOffsetX",
+        offsetY = "sellItemOffsetY",
+    },
+    REPAIR_VENDOR = {
+        sizeX = "repairVendorSizeX",
+        sizeY = "repairVendorSizeY",
+        offsetX = "repairVendorOffsetX",
+        offsetY = "repairVendorOffsetY",
+    },
+}
+
+local function CreateProfileDefaults()
+    local profileDefaults = {
+        enabled = true,
+        testMode = false,
+        useCustomColor = false,
+        colorR = 1,
+        colorG = 1,
+        colorB = 1,
+        desaturateTexture = false,
+        useBrightness = false,
+        brightness = 1,
+        useGlobalAlpha = false,
+        globalAlpha = 1,
+    }
+
+    for stateKey, profileKeys in pairs(CURSOR_STATE_PROFILE_KEYS) do
+        local stateDefaults = ns.CursorStateDefaults[stateKey]
+        if stateDefaults then
+            profileDefaults[profileKeys.sizeX] = stateDefaults.sizeX
+            profileDefaults[profileKeys.sizeY] = stateDefaults.sizeY
+            profileDefaults[profileKeys.offsetX] = stateDefaults.offsetX
+            profileDefaults[profileKeys.offsetY] = stateDefaults.offsetY
+        end
+    end
+
+    return profileDefaults
+end
+
 GG = LibStub("AceAddon-3.0"):NewAddon(
     ADDON_NAME,
     "AceEvent-3.0",
@@ -21,129 +283,7 @@ function GG:OnInitialize()
     _G.GauntletGlowNS = ns
 
     self.db = LibStub("AceDB-3.0"):New("GauntletGlowDB", {
-        profile = {
-
-            enabled = true,
-            testMode = false,
-            useCustomColor = false,
-            colorR = 1,
-            colorG = 1,
-            colorB = 1,
-            desaturateTexture = false,
-            useBrightness = false,
-            brightness = 1,
-            useGlobalAlpha = false,
-            globalAlpha = 1,
-
-            -- DEFAULT
-            offsetX = 15,
-            offsetY = -13.5,
-            sizeX = 68,
-            sizeY = 65,
-
-            -- ATTACK
-            swordSizeX = 70,
-            swordSizeY = 70,
-            swordOffsetX = 16,
-            swordOffsetY = -16,
-
-            -- LOOT
-            lootOffsetX = 13,
-            lootOffsetY = -13,
-            lootSizeX = 64,
-            lootSizeY = 64,
-
-            -- AUTO LOOT
-            autoLootOffsetX = 15,
-            autoLootOffsetY = -15,
-            autoLootSizeX = 68,
-            autoLootSizeY = 68,
-
-            -- HERBALISM
-            herbSizeX = 70,
-            herbSizeY = 70,
-            herbOffsetX = 16,
-            herbOffsetY = -16,
-
-            -- MINING
-            miningSizeX = 65,
-            miningSizeY = 70,
-            miningOffsetX = 13.5,
-            miningOffsetY = -16,
-
-            -- FLIGHTMASTER
-            flightMasterSizeX = 70,
-            flightMasterSizeY = 70,
-            flightMasterOffsetX = 16,
-            flightMasterOffsetY = -16,
-
-            -- BATTLEMASTER
-            battlemasterSizeX = 69,
-            battlemasterSizeY = 70,
-            battlemasterOffsetX = 16,
-            battlemasterOffsetY = -16,
-
-            -- TRAINER
-            trainerSizeX = 69,
-            trainerSizeY = 70,
-            trainerOffsetX = 16,
-            trainerOffsetY = -15.5,
-
-            -- DIRECTIONS GUARD
-            directionsGuardSizeX = 68,
-            directionsGuardSizeY = 69,
-            directionsGuardOffsetX = 15.5,
-            directionsGuardOffsetY = -15,
-
-            -- INNKEEPER
-            innkeeperSizeX = 66,
-            innkeeperSizeY = 66,
-            innkeeperOffsetX = 14,
-            innkeeperOffsetY = -14,
-
-            -- STABLEMASTER
-            stableMasterSizeX = 69,
-            stableMasterSizeY = 69,
-            stableMasterOffsetX = 15.5,
-            stableMasterOffsetY = -15.5,
-
-            -- MAILBOX
-            mailboxSizeX = 70,
-            mailboxSizeY = 65,
-            mailboxOffsetX = 16,
-            mailboxOffsetY = -13.5,
-
-            -- BANKER
-            bankerSizeX = 64,
-            bankerSizeY = 64,
-            bankerOffsetX = 13,
-            bankerOffsetY = -13,
-
-            -- SKINNABLE
-            skinnableSizeX = 69,
-            skinnableSizeY = 66,
-            skinnableOffsetX = 16,
-            skinnableOffsetY = -16,
-
-            -- VENDOR
-            vendorSizeX = 64,
-            vendorSizeY = 64,
-            vendorOffsetX = 13,
-            vendorOffsetY = -13,
-
-            -- REPAIR VENDOR
-            repairVendorSizeX = 67,
-            repairVendorSizeY = 68,
-            repairVendorOffsetX = 14.5,
-            repairVendorOffsetY = -15,
-
-            -- SELL ITEM
-            sellItemSizeX = 64,
-            sellItemSizeY = 64,
-            sellItemOffsetX = 13,
-            sellItemOffsetY = -13,
-
-        }
+        profile = CreateProfileDefaults()
     })
 
     self.lootedUnits = {}

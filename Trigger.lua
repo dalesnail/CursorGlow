@@ -13,6 +13,7 @@ local UnitIsTapDenied = UnitIsTapDenied
 local UnitIsPlayer = UnitIsPlayer
 local UnitIsFriend = UnitIsFriend
 local UnitGUID = UnitGUID
+local UnitClass = UnitClass
 local IsMouseButtonDown = IsMouseButtonDown
 local GetCVar = GetCVar
 local IsModifiedClick = IsModifiedClick
@@ -22,6 +23,18 @@ local GetProfessionInfo = GetProfessionInfo
 
 local Tooltip = ns.Tooltip
 local Data = ns.Data
+
+local CLASS_TRAINER_NAMES = {
+    WARRIOR = "Warrior",
+    MAGE = "Mage",
+    ROGUE = "Rogue",
+    DRUID = "Druid",
+    HUNTER = "Hunter",
+    PRIEST = "Priest",
+    WARLOCK = "Warlock",
+    PALADIN = "Paladin",
+    SHAMAN = "Shaman",
+}
 
 local function HasTooltipKeywords(dataKey, lines, category)
     local keywordData = Data and Data[dataKey]
@@ -62,6 +75,31 @@ local function IsFlightMasterName(name)
 
     local flightMasters = Data["FLIGHTMASTERS"] or Data["FLIGHTMASTER"]
     return flightMasters and flightMasters[name] or false
+end
+
+local function ResolveTrainerState(lines)
+    if not HasTooltipRole(lines, "TRAINER") then
+        return nil
+    end
+
+    local _, playerClassToken = UnitClass("player")
+    if not playerClassToken then
+        return "TRAINER"
+    end
+
+    for _, line in ipairs(lines or {}) do
+        for classToken, className in pairs(CLASS_TRAINER_NAMES) do
+            if strfind(line, className .. " Trainer", 1, true) then
+                if classToken == playerClassToken then
+                    return "TRAINER"
+                end
+
+                return "SPEAK"
+            end
+        end
+    end
+
+    return "TRAINER"
 end
 
 local function NormalizeBagID(bag)
@@ -239,8 +277,9 @@ local function AddTooltipRoleCandidates(candidates, lines, name)
         table.insert(candidates, "BATTLEMASTER")
     end
 
-    if HasTooltipRole(lines, "TRAINER") then
-        table.insert(candidates, "TRAINER")
+    local trainerState = ResolveTrainerState(lines)
+    if trainerState then
+        table.insert(candidates, trainerState)
     end
 
     if HasTooltipRole(lines, "DIRECTIONS_GUARD") then
