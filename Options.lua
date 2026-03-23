@@ -749,8 +749,8 @@ local function CreateValueSlider(parent, labelText, minValue, maxValue, step)
     row.valueText:SetJustifyV("MIDDLE")
     
     row.valueEdit = CreateFrame("EditBox", nil, row.valueFrame, "InputBoxTemplate")
-    row.valueEdit:SetPoint("TOPLEFT", -2, 2)
-    row.valueEdit:SetPoint("BOTTOMRIGHT", 2, -2)
+    row.valueEdit:SetPoint("TOPLEFT", 0, 0)
+    row.valueEdit:SetPoint("BOTTOMRIGHT", -6, 0)
     row.valueEdit:SetAutoFocus(false)
     row.valueEdit:SetNumeric(false)
     row.valueEdit:SetJustifyH("RIGHT")
@@ -759,24 +759,26 @@ local function CreateValueSlider(parent, labelText, minValue, maxValue, step)
     row.valueEdit:SetMaxLetters(8)
     row.valueEdit:Hide()
     
-    row.valueEdit:SetFontObject(GameFontHighlight)
+    local valueFontPath, valueFontSize, valueFontFlags = row.valueText:GetFont()
+    if valueFontPath then
+        row.valueEdit:SetFont(valueFontPath, valueFontSize, valueFontFlags)
+    end
+    
     row.valueEdit:SetTextColor(GOLD_TEXT[1], GOLD_TEXT[2], GOLD_TEXT[3])
     row.valueEdit:SetShadowOffset(1, -1)
     row.valueEdit:SetShadowColor(0, 0, 0, 0.75)
-    row.valueEdit:SetTextInsets(0, 6, 0, 0)
     
-    if row.valueEdit.Left then row.valueEdit.Left:Hide() end
-    if row.valueEdit.Middle then row.valueEdit.Middle:Hide() end
-    if row.valueEdit.Right then row.valueEdit.Right:Hide() end
-    if row.valueEdit.LeftMiddle then row.valueEdit.LeftMiddle:Hide() end
-    if row.valueEdit.RightMiddle then row.valueEdit.RightMiddle:Hide() end
-    if row.valueEdit.MiddleMiddle then row.valueEdit.MiddleMiddle:Hide() end
-    if row.valueEdit.TopLeft then row.valueEdit.TopLeft:Hide() end
-    if row.valueEdit.TopRight then row.valueEdit.TopRight:Hide() end
-    if row.valueEdit.TopMiddle then row.valueEdit.TopMiddle:Hide() end
-    if row.valueEdit.BottomLeft then row.valueEdit.BottomLeft:Hide() end
-    if row.valueEdit.BottomRight then row.valueEdit.BottomRight:Hide() end
-    if row.valueEdit.BottomMiddle then row.valueEdit.BottomMiddle:Hide() end
+    for _, regionName in ipairs({
+        "Left", "Middle", "Right",
+        "LeftMiddle", "MiddleMiddle", "RightMiddle",
+        "TopLeft", "TopMiddle", "TopRight",
+        "BottomLeft", "BottomMiddle", "BottomRight",
+    }) do
+        local region = row.valueEdit[regionName]
+        if region then
+            region:Hide()
+        end
+    end
 
     -- Toggle edit mode
     local function ShowEdit(self)
