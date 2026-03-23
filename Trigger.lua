@@ -1,5 +1,5 @@
 local ADDON_NAME, ns = ...
-local CursorGlow = ns.CursorGlow
+local GG = ns.GauntletGlow
 
 -- ############################################################
 -- LOCALS
@@ -286,7 +286,7 @@ end
 -- TRIGGER LOOP
 -- ############################################################
 
-function CursorGlow:StartTriggerLoop()
+function GG:StartTriggerLoop()
     if self.triggerFrame then return end
 
     local f = CreateFrame("Frame")
@@ -308,7 +308,7 @@ end
 -- Resolver
 -- ############################################################
 
-function CursorGlow:ResolveState(candidates)
+function GG:ResolveState(candidates)
     local bestState = nil
     local bestPriority = -math.huge
 
@@ -328,7 +328,7 @@ end
 -- TRIGGER LOGIC
 -- ############################################################
 
-function CursorGlow:EvaluateTrigger()
+function GG:EvaluateTrigger()
     if self.db.profile.testMode then
         return true, "DEFAULT"
     end
@@ -396,9 +396,9 @@ end
 -- VISIBILITY
 -- ############################################################
 
-function CursorGlow:ApplyVisibility(state)
+function GG:ApplyVisibility(state)
     if not self.db.profile.enabled then
-        self.cursorGlow:Hide()
+        self.gauntletGlow:Hide()
         return
     end
 
@@ -406,8 +406,8 @@ function CursorGlow:ApplyVisibility(state)
     self.currentVisible = state
 
     if state then
-        self.cursorGlow:Show()
+        self.gauntletGlow:Show()
     else
-        self.cursorGlow:Hide()
+        self.gauntletGlow:Hide()
     end
 end

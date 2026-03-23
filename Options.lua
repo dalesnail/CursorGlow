@@ -1,5 +1,5 @@
 local ADDON_NAME, ns = ...
-local CursorGlow = ns.CursorGlow
+local GG = ns.GauntletGlow
 
 ------------------------------------------------------------------------------------
 -- WINDOW LAYOUT CONSTANTS
@@ -226,7 +226,7 @@ local function GetAddonMetadataValue(addonName, field)
 end
 
 local function GetAddonDisplayTitle(addonName)
-    return GetAddonMetadataValue(addonName, "Title") or addonName or "CursorGlow"
+    return GetAddonMetadataValue(addonName, "Title") or addonName or "GauntletGlow"
 end
 
 local function GetAddonVersion(addonName)
@@ -320,7 +320,7 @@ local function ApplyFrameSize(self, frame)
 end
 
 local function EvaluateAndApplyCurrentState(self)
-    if not self or not self.cursorGlow then
+    if not self or not self.gauntletGlow then
         return
     end
 
@@ -833,7 +833,7 @@ local function CreateValueSlider(parent, labelText, minValue, maxValue, step)
 
     row.valueText:SetAlpha(0.85)
 
-    row.slider = CreateFrame("Slider", "CursorGlowValueSlider" .. sliderNameIndex, row)
+    row.slider = CreateFrame("Slider", "GauntletGlowValueSlider" .. sliderNameIndex, row)
     row.slider:SetOrientation("HORIZONTAL")
     row.slider:SetPoint("TOPLEFT", row.label, "BOTTOMLEFT", 0, -11)
     row.slider:SetPoint("TOPRIGHT", row, "TOPRIGHT", 0, -24)
@@ -1035,7 +1035,7 @@ end
 -- GENERAL PAGE BUILD
 ------------------------------------------------------------------------------------
 local function BuildGeneralPage(self, page)
-    local intro = CreateText(page.body, "GameFontHighlight", "General settings for CursorGlow", FONT_STYLES.body)
+    local intro = CreateText(page.body, "GameFontHighlight", "General settings for GauntletGlow", FONT_STYLES.body)
     intro:SetPoint("TOPLEFT", 0, 0)
     intro:SetPoint("RIGHT", page.body, "RIGHT", 0, 0)
 
@@ -1301,7 +1301,7 @@ local function BuildAboutPage(page)
     page.commandsLabel = CreateText(page.summary, "GameFontNormal", "Commands", FONT_STYLES.sectionTitle)
     page.commandsLabel:SetPoint("TOPLEFT", page.versionLabel, "BOTTOMLEFT", 0, rowGap)
 
-    page.commandsValue = CreateText(page.summary, "GameFontHighlight", "/cg or /cursorglow", FONT_STYLES.body)
+    page.commandsValue = CreateText(page.summary, "GameFontHighlight", "/gg or /gauntletglow", FONT_STYLES.body)
     page.commandsValue:SetPoint("TOPLEFT", valueX, -62)
     page.commandsValue:SetPoint("RIGHT", page.summary, "RIGHT", -16, 0)
 
@@ -1377,7 +1377,7 @@ local function CreateConfigFrame(self)
         return self.configFrame
     end
 
-    local frame = CreateFrame("Frame", "CursorGlowConfigFrame", UIParent, "BasicFrameTemplateWithInset")
+    local frame = CreateFrame("Frame", "GauntletGlowConfigFrame", UIParent, "BasicFrameTemplateWithInset")
     ApplyFrameSize(self, frame)
     frame:SetPoint("CENTER")
     frame:SetFrameStrata("HIGH")
@@ -1427,7 +1427,7 @@ local function CreateConfigFrame(self)
     end
     if frame.TitleText then
         frame.TitleText:Show()
-        frame.TitleText:SetText("CursorGlow")
+        frame.TitleText:SetText("GauntletGlow")
         frame.TitleText:ClearAllPoints()
         frame.TitleText:SetPoint("TOP", frame, "TOP", 0, -6)
     end
@@ -1579,11 +1579,11 @@ local function CreateConfigFrame(self)
     return frame
 end
 
-function CursorGlow:SetupOptions()
+function GG:SetupOptions()
     self.optionsInitialized = true
 end
 
-function CursorGlow:OpenConfig()
+function GG:OpenConfig()
     local frame = CreateConfigFrame(self)
     frame:Show()
     if frame.Raise then

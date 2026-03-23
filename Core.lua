@@ -3,23 +3,24 @@
 -- ############################################################
 
 local ADDON_NAME, ns = ...
+local GG = ns.GauntletGlow
 
-local CursorGlow = LibStub("AceAddon-3.0"):NewAddon(
+GG = LibStub("AceAddon-3.0"):NewAddon(
     ADDON_NAME,
     "AceEvent-3.0",
     "AceTimer-3.0",
     "AceConsole-3.0"
 )
 
-ns.CursorGlow = CursorGlow
+ns.GauntletGlow = GG
 
 local LOOT_EXPIRATION = 240
 local CLEANUP_INTERVAL = 30
 
-function CursorGlow:OnInitialize()
-    _G.CursorGlowNS = ns
+function GG:OnInitialize()
+    _G.GauntletGlowNS = ns
 
-    self.db = LibStub("AceDB-3.0"):New("CursorGlowDB", {
+    self.db = LibStub("AceDB-3.0"):New("GauntletGlowDB", {
         profile = {
 
             enabled = true,
@@ -135,27 +136,27 @@ function CursorGlow:OnInitialize()
     self.States = ns.States
 end
 
-function CursorGlow:OnEnable()
-    self:CreateCursorGlow()
+function GG:OnEnable()
+    self:CreateGauntletGlow()
     self:StartCursorMovement()
     self:StartTriggerLoop()
     self:SetupOptions()
 
-    self:RegisterChatCommand("cg", "OpenConfig")
-    self:RegisterChatCommand("cursorglow", "OpenConfig")
+    self:RegisterChatCommand("gg", "OpenConfig")
+    self:RegisterChatCommand("gauntletglow", "OpenConfig")
 
     self:RegisterEvent("LOOT_OPENED")
 
     self.cleanupTimer = self:ScheduleRepeatingTimer("CleanupLootedUnits", CLEANUP_INTERVAL)
 end
 
-function CursorGlow:LOOT_OPENED()
+function GG:LOOT_OPENED()
     if self.lastMouseoverGUID then
         self.lootedUnits[self.lastMouseoverGUID] = GetTime()
     end
 end
 
-function CursorGlow:CleanupLootedUnits()
+function GG:CleanupLootedUnits()
     local now = GetTime()
 
     for guid, timestamp in pairs(self.lootedUnits) do
@@ -165,7 +166,7 @@ function CursorGlow:CleanupLootedUnits()
     end
 end
 
-function CursorGlow:OnDisable()
+function GG:OnDisable()
     if self.cleanupTimer then
         self:CancelTimer(self.cleanupTimer)
         self.cleanupTimer = nil

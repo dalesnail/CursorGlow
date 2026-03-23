@@ -1,10 +1,10 @@
 ## Interface: 20504
-## Title: CursorGlow
+## Title: GauntletGlow
 ## Version: 0.1.6
 ## Notes: Cursor glow effect
 ## Author: Dalesnail
-## SavedVariables: CursorGlowDB
-## IconTexture: Interface\AddOns\CursorGlow\Media\Icons\icon_glow
+## SavedVariables: GauntletGlowDB
+## IconTexture: Interface\AddOns\GauntletGlow\Media\Icons\icon_glow
 
 # ------------------------------
 # Ace3 (EMBEDDED - FULL STRUCTURE)

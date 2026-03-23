@@ -1,11 +1,11 @@
 local ADDON_NAME, ns = ...
-local CursorGlow = ns.CursorGlow
+local GG = ns.GauntletGlow
 
 local GetCursorPosition = GetCursorPosition
 local UIParent = UIParent
 
-function CursorGlow:CreateCursorGlow()
-    local f = CreateFrame("Frame", "CursorGlowFrame", UIParent)
+function GG:CreateGauntletGlow()
+    local f = CreateFrame("Frame", "GauntletGlowFrame", UIParent)
     f:SetFrameStrata("TOOLTIP")
 
     local tex = f:CreateTexture(nil, "OVERLAY")
@@ -15,17 +15,17 @@ function CursorGlow:CreateCursorGlow()
     f.texture = tex
     f:Hide()
 
-    self.cursorGlow = f
+    self.gauntletGlow = f
 end
 
-function CursorGlow:ApplyState(stateName, force)
+function GG:ApplyState(stateName, force)
     if not force and self.currentStateName == stateName then return end
     self.currentStateName = stateName
 
     local state = self.States[stateName]
     if not state then return end
 
-    self.cursorGlow.texture:SetTexture(state.texture)
+    self.gauntletGlow.texture:SetTexture(state.texture)
 
     local sizeX = state.sizeX
     local sizeY = state.sizeY
@@ -135,17 +135,17 @@ function CursorGlow:ApplyState(stateName, force)
         offsetY = self.db.profile.offsetY or offsetY
     end
 
-    self.cursorGlow:SetSize(sizeX, sizeY)
+    self.gauntletGlow:SetSize(sizeX, sizeY)
     self.currentOffsetX = offsetX
     self.currentOffsetY = offsetY
 end
 
-function CursorGlow:RefreshActiveState()
+function GG:RefreshActiveState()
     if not self.currentStateName then return end
     self:ApplyState(self.currentStateName, true)
 end
 
-function CursorGlow:StartCursorMovement()
+function GG:StartCursorMovement()
     if self.movementFrame then return end
 
     local f = CreateFrame("Frame")
@@ -157,7 +157,7 @@ function CursorGlow:StartCursorMovement()
     self.movementFrame = f
 end
 
-function CursorGlow:UpdateCursorPosition()
+function GG:UpdateCursorPosition()
     local x, y = GetCursorPosition()
     local scale = UIParent:GetEffectiveScale()
 
@@ -167,6 +167,6 @@ function CursorGlow:UpdateCursorPosition()
     local offsetX = self.currentOffsetX or 0
     local offsetY = self.currentOffsetY or 0
 
-    self.cursorGlow:ClearAllPoints()
-    self.cursorGlow:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x + offsetX, y + offsetY)
+    self.gauntletGlow:ClearAllPoints()
+    self.gauntletGlow:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x + offsetX, y + offsetY)
 end

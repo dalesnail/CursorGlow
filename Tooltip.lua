@@ -3,6 +3,7 @@
 -- ############################################################
 
 local ADDON_NAME, ns = ...
+local GG = ns.GauntletGlow
 
 local Tooltip = {}
 

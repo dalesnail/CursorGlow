@@ -1,9 +1,10 @@
 local ADDON_NAME, ns = ...
+local GG = ns.GauntletGlow
 
 ns.States = {
 
     DEFAULT = {
-        texture = "Interface\\AddOns\\CursorGlow\\Media\\cursor_glow_default.png",
+        texture = "Interface\\AddOns\\GauntletGlow\\Media\\cursor_glow_default.png",
         sizeX = 68,
         sizeY = 65,
         offsetX = 15,
@@ -11,7 +12,7 @@ ns.States = {
     },
 
     ATTACK = {
-        texture = "Interface\\AddOns\\CursorGlow\\Media\\sword_glow_default.png",
+        texture = "Interface\\AddOns\\GauntletGlow\\Media\\sword_glow_default.png",
         sizeX = 70,
         sizeY = 70,
         offsetX = 16,
@@ -19,7 +20,7 @@ ns.States = {
     },
 
     LOOT = {
-        texture = "Interface\\AddOns\\CursorGlow\\Media\\loot_glow.png",
+        texture = "Interface\\AddOns\\GauntletGlow\\Media\\loot_glow.png",
         sizeX = 64,
         sizeY = 64,
         offsetX = 13,
@@ -27,7 +28,7 @@ ns.States = {
     },
 
     AUTOLOOT = {
-        texture = "Interface\\AddOns\\CursorGlow\\Media\\autoloot_glow.png",
+        texture = "Interface\\AddOns\\GauntletGlow\\Media\\autoloot_glow.png",
         sizeX = 68,
         sizeY = 68,
         offsetX = 15,
@@ -35,7 +36,7 @@ ns.States = {
     },
 
     HERBALISM = {
-        texture = "Interface\\AddOns\\CursorGlow\\Media\\herb_glow.png",
+        texture = "Interface\\AddOns\\GauntletGlow\\Media\\herb_glow.png",
         sizeX = 70,
         sizeY = 70,
         offsetX = 16,
@@ -43,7 +44,7 @@ ns.States = {
     },
 
     MINING = {
-        texture = "Interface\\AddOns\\CursorGlow\\Media\\mining_glow.png",
+        texture = "Interface\\AddOns\\GauntletGlow\\Media\\mining_glow.png",
         sizeX = 65,
         sizeY = 70,
         offsetX = 13.5,
@@ -51,7 +52,7 @@ ns.States = {
     },
 
     FLIGHTMASTER = {
-        texture = "Interface\\AddOns\\CursorGlow\\Media\\flight_glow.png",
+        texture = "Interface\\AddOns\\GauntletGlow\\Media\\flight_glow.png",
         sizeX = 70,
         sizeY = 70,
         offsetX = 16,
@@ -59,7 +60,7 @@ ns.States = {
     },
 
     BATTLEMASTER = {
-        texture = "Interface\\AddOns\\CursorGlow\\Media\\battlemaster_glow.png",
+        texture = "Interface\\AddOns\\GauntletGlow\\Media\\battlemaster_glow.png",
         sizeX = 69,
         sizeY = 70,
         offsetX = 16,
@@ -67,7 +68,7 @@ ns.States = {
     },
 
     TRAINER = {
-        texture = "Interface\\AddOns\\CursorGlow\\Media\\trainer_glow.png",
+        texture = "Interface\\AddOns\\GauntletGlow\\Media\\trainer_glow.png",
         sizeX = 69,
         sizeY = 70,
         offsetX = 16,
@@ -75,7 +76,7 @@ ns.States = {
     },
 
     DIRECTIONS_GUARD = {
-        texture = "Interface\\AddOns\\CursorGlow\\Media\\directions_glow.png",
+        texture = "Interface\\AddOns\\GauntletGlow\\Media\\directions_glow.png",
         sizeX = 68,
         sizeY = 69,
         offsetX = 15.5,
@@ -83,7 +84,7 @@ ns.States = {
     },
 
     INNKEEPER = {
-        texture = "Interface\\AddOns\\CursorGlow\\Media\\innkeeper_glow.png",
+        texture = "Interface\\AddOns\\GauntletGlow\\Media\\innkeeper_glow.png",
         sizeX = 66,
         sizeY = 66,
         offsetX = 14,
@@ -91,7 +92,7 @@ ns.States = {
     },
 
     STABLEMASTER = {
-        texture = "Interface\\AddOns\\CursorGlow\\Media\\stablemaster_glow.png",
+        texture = "Interface\\AddOns\\GauntletGlow\\Media\\stablemaster_glow.png",
         sizeX = 69,
         sizeY = 69,
         offsetX = 15.5,
@@ -99,7 +100,7 @@ ns.States = {
     },
 
     MAILBOX = {
-        texture = "Interface\\AddOns\\CursorGlow\\Media\\mail_glow.png",
+        texture = "Interface\\AddOns\\GauntletGlow\\Media\\mail_glow.png",
         sizeX = 70,
         sizeY = 65,
         offsetX = 16,
@@ -107,7 +108,7 @@ ns.States = {
     },
 
     SKINNABLE = {
-        texture = "Interface\\AddOns\\CursorGlow\\Media\\skinnable_glow.png",
+        texture = "Interface\\AddOns\\GauntletGlow\\Media\\skinnable_glow.png",
         sizeX = 69,
         sizeY = 66,
         offsetX = 16,
@@ -115,7 +116,7 @@ ns.States = {
     },
 
     VENDOR = {
-        texture = "Interface\\AddOns\\CursorGlow\\Media\\loot_glow.png",
+        texture = "Interface\\AddOns\\GauntletGlow\\Media\\loot_glow.png",
         sizeX = 64,
         sizeY = 64,
         offsetX = 13,
@@ -123,7 +124,7 @@ ns.States = {
     },
 
     SELL_ITEM = {
-        texture = "Interface\\AddOns\\CursorGlow\\Media\\loot_glow.png",
+        texture = "Interface\\AddOns\\GauntletGlow\\Media\\loot_glow.png",
         sizeX = 64,
         sizeY = 64,
         offsetX = 13,
@@ -131,7 +132,7 @@ ns.States = {
     },
 
     REPAIR_VENDOR = {
-        texture = "Interface\\AddOns\\CursorGlow\\Media\\repair_glow.png",
+        texture = "Interface\\AddOns\\GauntletGlow\\Media\\repair_glow.png",
         sizeX = 67,
         sizeY = 68,
         offsetX = 14.5,
