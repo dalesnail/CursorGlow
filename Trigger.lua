@@ -28,6 +28,7 @@ local IsResting = IsResting
 
 local Tooltip = ns.Tooltip
 local Data = ns.Data
+local QuestieIntegration = ns.QuestieIntegration
 
 local CLASS_TRAINER_NAMES = {
     WARRIOR = "Warrior",
@@ -498,6 +499,11 @@ function GG:EvaluateTrigger()
 
     AddWorldTooltipCandidates(candidates, lines)
     AddTooltipRoleCandidates(candidates, lines, name)
+
+    local questieState = QuestieIntegration and QuestieIntegration.GetMouseoverNpcQuestState and QuestieIntegration.GetMouseoverNpcQuestState()
+    if questieState then
+        table.insert(candidates, questieState)
+    end
 
     if GetHoveredBagItem() then
         table.insert(candidates, "SELL_ITEM")

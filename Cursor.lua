@@ -380,6 +380,24 @@ function GG:ApplyState(stateName, force)
         offsetX = self.db.profile.mailboxOffsetX or offsetX
         offsetY = self.db.profile.mailboxOffsetY or offsetY
 
+    elseif stateName == "QUEST_AVAILABLE" then
+        sizeX = self.db.profile.questAvailableSizeX or sizeX
+        sizeY = self.db.profile.questAvailableSizeY or sizeY
+        offsetX = self.db.profile.questAvailableOffsetX or offsetX
+        offsetY = self.db.profile.questAvailableOffsetY or offsetY
+
+    elseif stateName == "QUEST_INCOMPLETE" then
+        sizeX = self.db.profile.questIncompleteSizeX or sizeX
+        sizeY = self.db.profile.questIncompleteSizeY or sizeY
+        offsetX = self.db.profile.questIncompleteOffsetX or offsetX
+        offsetY = self.db.profile.questIncompleteOffsetY or offsetY
+
+    elseif stateName == "QUEST_TURN_IN" then
+        sizeX = self.db.profile.questTurnInSizeX or sizeX
+        sizeY = self.db.profile.questTurnInSizeY or sizeY
+        offsetX = self.db.profile.questTurnInOffsetX or offsetX
+        offsetY = self.db.profile.questTurnInOffsetY or offsetY
+
     elseif stateName == "FINANCE" then
         sizeX = self.db.profile.bankerSizeX or sizeX
         sizeY = self.db.profile.bankerSizeY or sizeY

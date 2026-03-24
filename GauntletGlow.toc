@@ -37,5 +37,6 @@ Data\NPCs\FlightMasters.lua
 # --------------------------------------------------
 Tooltip.lua
 Cursor.lua
+QuestieIntegration.lua
 Trigger.lua
 Options.lua

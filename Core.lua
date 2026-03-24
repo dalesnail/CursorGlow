@@ -90,6 +90,24 @@ ns.CursorStateDefaults = ns.CursorStateDefaults or {
         offsetX = 16,
         offsetY = -13.5,
     },
+    QUEST_AVAILABLE = {
+        sizeX = 59,
+        sizeY = 68,
+        offsetX = 10.5,
+        offsetY = -15,
+    },
+    QUEST_INCOMPLETE = {
+        sizeX = 59,
+        sizeY = 68,
+        offsetX = 10.5,
+        offsetY = -15,
+    },
+    QUEST_TURN_IN = {
+        sizeX = 62,
+        sizeY = 67,
+        offsetX = 12,
+        offsetY = -14.5,
+    },
     FINANCE = {
         sizeX = 64,
         sizeY = 64,
@@ -300,6 +318,24 @@ local CURSOR_STATE_PROFILE_KEYS = {
         offsetX = "mailboxOffsetX",
         offsetY = "mailboxOffsetY",
     },
+    QUEST_AVAILABLE = {
+        sizeX = "questAvailableSizeX",
+        sizeY = "questAvailableSizeY",
+        offsetX = "questAvailableOffsetX",
+        offsetY = "questAvailableOffsetY",
+    },
+    QUEST_INCOMPLETE = {
+        sizeX = "questIncompleteSizeX",
+        sizeY = "questIncompleteSizeY",
+        offsetX = "questIncompleteOffsetX",
+        offsetY = "questIncompleteOffsetY",
+    },
+    QUEST_TURN_IN = {
+        sizeX = "questTurnInSizeX",
+        sizeY = "questTurnInSizeY",
+        offsetX = "questTurnInOffsetX",
+        offsetY = "questTurnInOffsetY",
+    },
     FINANCE = {
         sizeX = "bankerSizeX",
         sizeY = "bankerSizeY",
@@ -390,7 +426,7 @@ GG = LibStub("AceAddon-3.0"):NewAddon(
 
 ns.GauntletGlow = GG
 
-local LOOT_EXPIRATION = 240
+local LOOT_EXPIRATION = 480
 local CLEANUP_INTERVAL = 30
 
 local function MigratePlayerStateEffectProfile(effectKey, effectProfile)

@@ -45,6 +45,12 @@ ns.States = {
 
     MAILBOX = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\mail_glow.png", "MAILBOX"),
 
+    QUEST_AVAILABLE = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\quest_A.png", "QUEST_AVAILABLE"),
+
+    QUEST_INCOMPLETE = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\quest_A.png", "QUEST_INCOMPLETE"),
+
+    QUEST_TURN_IN = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\quest_C.png", "QUEST_TURN_IN"),
+
     FINANCE = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\loot_glow.png", "FINANCE"),
 
     SKINNABLE = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\skinnable_glow.png", "SKINNABLE"),
@@ -64,6 +70,9 @@ ns.StatePriority = {
     SELL_ITEM = 100,
     HERBALISM = 95,
     MINING = 95,
+    QUEST_TURN_IN = 91,
+    QUEST_AVAILABLE = 90.5,
+    QUEST_INCOMPLETE = 90.25,
     FLIGHTMASTER = 90,
     BATTLEMASTER = 88,
     TRAINER = 87,
