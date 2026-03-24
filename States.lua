@@ -47,8 +47,6 @@ ns.States = {
 
     QUEST_AVAILABLE = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\quest_A.png", "QUEST_AVAILABLE"),
 
-    QUEST_INCOMPLETE = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\quest_A.png", "QUEST_INCOMPLETE"),
-
     QUEST_TURN_IN = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\quest_C.png", "QUEST_TURN_IN"),
 
     FINANCE = CreateState("Interface\\AddOns\\GauntletGlow\\Media\\loot_glow.png", "FINANCE"),
@@ -72,7 +70,6 @@ ns.StatePriority = {
     MINING = 95,
     QUEST_TURN_IN = 91,
     QUEST_AVAILABLE = 90.5,
-    QUEST_INCOMPLETE = 90.25,
     FLIGHTMASTER = 90,
     BATTLEMASTER = 88,
     TRAINER = 87,

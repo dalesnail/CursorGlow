@@ -85,7 +85,6 @@ local CURSOR_STATE_ORDER = {
     "STABLEMASTER",
     "MAILBOX",
     "QUEST_AVAILABLE",
-    "QUEST_INCOMPLETE",
     "QUEST_TURN_IN",
     "FINANCE",
     "SKINNABLE",
@@ -99,7 +98,6 @@ local CURSOR_STATE_LABELS = {
     FLIGHTMASTER = "Flight Master",
     STABLEMASTER = "Stable Master",
     QUEST_AVAILABLE = "Quest Available",
-    QUEST_INCOMPLETE = "Quest Incomplete",
     QUEST_TURN_IN = "Quest Turn In",
     FINANCE = "Finance",
     SPEAK = "Speak",
@@ -197,12 +195,6 @@ local CURSOR_STATE_CONFIG = {
         heightKey = "questAvailableSizeY",
         offsetXKey = "questAvailableOffsetX",
         offsetYKey = "questAvailableOffsetY",
-    },
-    QUEST_INCOMPLETE = {
-        widthKey = "questIncompleteSizeX",
-        heightKey = "questIncompleteSizeY",
-        offsetXKey = "questIncompleteOffsetX",
-        offsetYKey = "questIncompleteOffsetY",
     },
     QUEST_TURN_IN = {
         widthKey = "questTurnInSizeX",

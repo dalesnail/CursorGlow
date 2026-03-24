@@ -121,63 +121,8 @@ local function GetMouseoverNpcId()
     return tonumber(npcId)
 end
 
-local function GetPublicObjectiveIconHint(guid)
-    local questie = _G.Questie
-    local api = questie and questie.API
-    local getter = api and api.GetQuestObjectiveIconForUnit
-
-    if type(guid) ~= "string" or type(getter) ~= "function" then
-        return false, false
-    end
-
-    local ok, icon = pcall(getter, guid)
-    if not ok then
-        return false, false
-    end
-
-    return type(icon) == "string" and icon ~= "", true
-end
-
-local function IsIncompleteQuestNpcObjective(tooltip, shouldUsePublicHint, hasPublicObjectiveIcon)
-    if type(tooltip) ~= "table" or type(tooltip.questId) ~= "number" then
-        return false
-    end
-
-    local objective = tooltip.objective
-    if type(objective) ~= "table" or type(objective.Update) ~= "function" then
-        return false
-    end
-
-    local ok = pcall(function()
-        objective:Update()
-    end)
-    if not ok or objective.Completed then
-        return false
-    end
-
-    local questie = _G.Questie
-    if type(questie) ~= "table" then
-        return false
-    end
-
-    local iconType = objective.Icon
-    -- Questie's public unit-icon API does not surface the gray question-mark
-    -- incomplete marker, so we keep this internal tooltip fallback isolated here.
-    if iconType == questie.ICON_TYPE_INCOMPLETE then
-        return true
-    end
-
-    if shouldUsePublicHint and not hasPublicObjectiveIcon then
-        return false
-    end
-
-    return iconType == questie.ICON_TYPE_TALK
-        or iconType == questie.ICON_TYPE_INTERACT
-end
-
-local function ResolveTooltipState(tooltipEntries, shouldUsePublicHint, hasPublicObjectiveIcon)
+local function ResolveTooltipState(tooltipEntries)
     local hasQuestAvailable = false
-    local hasQuestIncomplete = false
 
     for _, tooltip in pairs(tooltipEntries) do
         if type(tooltip) == "table" and type(tooltip.questId) == "number" then
@@ -188,19 +133,11 @@ local function ResolveTooltipState(tooltipEntries, shouldUsePublicHint, hasPubli
             if tooltip.type == "NPC" then
                 hasQuestAvailable = true
             end
-
-            if not hasQuestAvailable and IsIncompleteQuestNpcObjective(tooltip, shouldUsePublicHint, hasPublicObjectiveIcon) then
-                hasQuestIncomplete = true
-            end
         end
     end
 
     if hasQuestAvailable then
         return "QUEST_AVAILABLE"
-    end
-
-    if hasQuestIncomplete then
-        return "QUEST_INCOMPLETE"
     end
 
     return nil
@@ -216,9 +153,6 @@ function QuestieIntegration.GetMouseoverNpcQuestState()
         return nil
     end
 
-    local guid = UnitGUID("mouseover")
-    local hasPublicObjectiveIcon, shouldUsePublicHint = GetPublicObjectiveIconHint(guid)
-
     local tooltipModule = GetTooltipModule()
     local lookupByKey = tooltipModule and type(tooltipModule.lookupByKey) == "table" and tooltipModule.lookupByKey or nil
     local tooltipEntries = lookupByKey and lookupByKey["m_" .. npcId]
@@ -227,5 +161,5 @@ function QuestieIntegration.GetMouseoverNpcQuestState()
         return nil
     end
 
-    return ResolveTooltipState(tooltipEntries, shouldUsePublicHint, hasPublicObjectiveIcon)
+    return ResolveTooltipState(tooltipEntries)
 end
