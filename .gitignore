@@ -1,3 +1,6 @@
 # Ignore all markdown files
 *.md
+
+# Folders to ignore
 /Questie_Reference_Folder_DELETE_AFTER_USE/
+/Deltas/

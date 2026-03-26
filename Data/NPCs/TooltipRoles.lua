@@ -86,6 +86,8 @@ ns.Data["TOOLTIP_ROLE_KEYWORDS"] = {
         exact = {
             ["General Goods and Repairs"] = true,
             ["General Goods and Repair"] = true,
+            ["General Goods & Repairs"] = true,
+            ["General Goods & Repair"] = true,
 
             ["Argent Quartermaster Lightspark"] = true,
 
@@ -167,6 +169,9 @@ ns.Data["TOOLTIP_ROLE_KEYWORDS"] = {
             ["Merchant"] = true,
             ["Vendor"] = true,
             ["Supplies"] = true,
+            ["Tradesman"] = true,
+
+            ["Tabard Vendor"] = true,
 
             ["General Goods"] = true,
             ["General Goods Merchant"] = true,
