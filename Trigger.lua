@@ -30,6 +30,14 @@ local Tooltip = ns.Tooltip
 local Data = ns.Data
 local QuestieIntegration = ns.QuestieIntegration
 
+-- ############################################################
+-- GLiB Helpers
+-- ############################################################
+
+local function GetGLiB()
+    return _G.GLiB
+end
+
 local CLASS_TRAINER_NAMES = {
     WARRIOR = "Warrior",
     MAGE = "Mage",
@@ -72,6 +80,68 @@ end
 
 local function HasWorldTooltipKeyword(lines, category)
     return HasTooltipKeywords("TOOLTIP_WORLD_KEYWORDS", lines, category)
+end
+
+local function GetNpcIdFromGUID(guid)
+    if not guid then
+        return nil
+    end
+
+    local unitType, _, _, _, _, npcId = strsplit("-", guid)
+    if unitType ~= "Creature" and unitType ~= "Vehicle" then
+        return nil
+    end
+
+    return tonumber(npcId)
+end
+
+local function GetMouseoverNpcId()
+    if not UnitExists("mouseover") then
+        return nil
+    end
+
+    return GetNpcIdFromGUID(UnitGUID("mouseover"))
+end
+
+local function GetGLiBNpcType()
+    local glib = GetGLiB()
+    if not glib or type(glib.NpcTypeById) ~= "function" then
+        return nil
+    end
+
+    local npcId = GetMouseoverNpcId()
+    if not npcId then
+        return nil
+    end
+
+    return glib:NpcTypeById(npcId), npcId
+end
+
+local function GetGLiBObjType(name)
+    local glib = GetGLiB()
+    if not glib or type(glib.ObjType) ~= "function" then
+        return nil
+    end
+
+    if not name or name == "" then
+        return nil
+    end
+
+    return glib:ObjType(name)
+end
+
+local function GetGLiBIdentity(name)
+    local npcType, npcId = GetGLiBNpcType()
+    if npcType then
+        return "npc", npcType, npcId
+    end
+
+    local objectType = GetGLiBObjType(name)
+    if objectType then
+        return "object", objectType
+    end
+
+    return nil, nil, nil
 end
 
 local function IsFlightMasterName(name)
@@ -289,10 +359,16 @@ local function GetHoveredBagItem()
 end
 
 local function AddTooltipRoleCandidates(candidates, lines, name)
-    if HasTooltipRole(lines, "FLIGHTMASTER") then
+    local _, glibType = GetGLiBIdentity(name)
+
+    if glibType == "flightmaster" then
         table.insert(candidates, "FLIGHTMASTER")
-    elseif IsFlightMasterName(name) then
-        table.insert(candidates, "FLIGHTMASTER")
+    -- >>> TEMPORARILY DISABLE FLIGHTMASTER FALLBACKS FOR TESTING >>>
+    -- elseif HasTooltipRole(lines, "FLIGHTMASTER") then
+    --     table.insert(candidates, "FLIGHTMASTER")
+    -- elseif IsFlightMasterName(name) then
+    --     table.insert(candidates, "FLIGHTMASTER")
+    -- <<< TEMPORARILY DISABLE FLIGHTMASTER FALLBACKS FOR TESTING <<<
     end
 
     if HasTooltipRole(lines, "BATTLEMASTER") then
@@ -304,7 +380,9 @@ local function AddTooltipRoleCandidates(candidates, lines, name)
         table.insert(candidates, trainerState)
     end
 
-    if HasTooltipRole(lines, "DIRECTIONS_GUARD") then
+    if glibType == "directions_guard" then
+        table.insert(candidates, "DIRECTIONS_GUARD")
+    elseif HasTooltipRole(lines, "DIRECTIONS_GUARD") then
         table.insert(candidates, "DIRECTIONS_GUARD")
     end
 
@@ -316,7 +394,7 @@ local function AddTooltipRoleCandidates(candidates, lines, name)
         table.insert(candidates, "STABLEMASTER")
     end
 
-    if HasTooltipRole(lines, "MAILBOX") then
+    if glibType == "mailbox" then
         table.insert(candidates, "MAILBOX")
     end
 

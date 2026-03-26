@@ -18,6 +18,13 @@ Libs\Ace3\AceTimer-3.0\AceTimer-3.0.xml
 Libs\Ace3\AceConsole-3.0\AceConsole-3.0.xml
 Libs\Ace3\AceDB-3.0\AceDB-3.0.xml
 
+# ------------------------------
+# GLiB (EMBEDDED)
+# ------------------------------
+Libs\GLiB\Core.lua
+Libs\GLiB\Objects.lua
+Libs\GLiB\NPCs.lua
+
 # --------------------------------------------------
 # CORE
 # --------------------------------------------------

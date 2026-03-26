@@ -59,12 +59,14 @@ ns.Data["TOOLTIP_ROLE_KEYWORDS"] = {
         contains = {}
     },
 
-    MAILBOX = {
-        exact = {
-            ["Mailbox"] = true,
-        },
-        contains = {}
-    },
+    -- GLiB Testing
+    -- MAILBOX = {
+    --     exact = {
+    --         ["Mailbox"] = true,
+    --     },
+    --     contains = {}
+    -- },
+    ---------------
 
     FINANCE = {
         exact = {

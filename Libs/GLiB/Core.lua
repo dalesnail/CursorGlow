@@ -36,6 +36,8 @@ function GLiB:Ready()
     return true
 end
 
+--[[ Objects ]]
+
 function GLiB:Obj(name)
     local keyMap = P.objNameToKey
     local dataMap = P.objData
@@ -67,6 +69,39 @@ function GLiB:HasObjTag(name, tag)
     end
 
     local info = self:Obj(name)
+    if not info or not info.tags then
+        return false
+    end
+
+    return info.tags[tag] == true
+end
+
+--[[ NPCs ]]
+
+function GLiB:NpcById(npcId)
+    if type(npcId) ~= "number" then
+        return nil
+    end
+
+    local dataMap = P.npcData
+    if not dataMap then
+        return nil
+    end
+
+    return dataMap[npcId]
+end
+
+function GLiB:NpcTypeById(npcId)
+    local info = self:NpcById(npcId)
+    return info and info.type or nil
+end
+
+function GLiB:HasNpcTagById(npcId, tag)
+    if type(tag) ~= "string" or tag == "" then
+        return false
+    end
+
+    local info = self:NpcById(npcId)
     if not info or not info.tags then
         return false
     end
