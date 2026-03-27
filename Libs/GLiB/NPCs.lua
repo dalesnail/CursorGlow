@@ -13,11 +13,9 @@ P.npcData = P.npcData or {}
 local npcData = P.npcData
 
 --[[ Flight Masters ]]
-local function Flight(npcId, name, title)
+local function Flight(npcId)
     npcData[npcId] = {
         id = npcId,
-        name = name,
-        title = title,
         type = "flightmaster",
         kind = "npc",
         tags = {
@@ -29,11 +27,9 @@ local function Flight(npcId, name, title)
 end
 
 --[[ Guards ]]
-local function Guard(npcId, name, title)
+local function Guard(npcId)
     npcData[npcId] = {
         id = npcId,
-        name = name,
-        title = title,
         type = "directions_guard",
         kind = "npc",
         tags = {
@@ -45,122 +41,297 @@ local function Guard(npcId, name, title)
     }
 end
 
+--[[ BattleMasters ]]
+local function Battle(npcId, name, title)
+    npcData[npcId] = {
+        id = npcId,
+        name = name,
+        title = title,
+        type = "battlemaster",
+        kind = "npc",
+        tags = {
+            battlemaster = true,
+            service = true,
+        },
+    }
+end
+
+--[[ Inkeepers ]]
+local function Inn(npcId, name, title)
+    npcData[npcId] = {
+        id = npcId,
+        name = name,
+        title = title,
+        type = "innkeeper",
+        kind = "npc",
+        tags = {
+            innkeeper = true,
+            service = true,
+        },
+    }
+end
+
+
+--[[ Stablemasters ]]
+local function Stable(npcId, name, title)
+    npcData[npcId] = {
+        id = npcId,
+        name = name,
+        title = title,
+        type = "stablemaster",
+        kind = "npc",
+        tags = {
+            stablemaster = true,
+            service = true,
+        },
+    }
+end
+
+--[[ Bankers and Auctioneers ]]
+local function Finance(npcId, name, title)
+    npcData[npcId] = {
+        id = npcId,
+        name = name,
+        title = title,
+        type = "finance",
+        kind = "npc",
+        tags = {
+            finance = true,
+            service = true,
+        },
+    }
+end
+
+--[[ Trainers ]]
+local function Trainer(npcId, subtype, classToken)
+    npcData[npcId] = {
+        id = npcId,
+        type = "trainer",
+        kind = "npc",
+        subtype = subtype,
+        class = classToken,
+        tags = {
+            trainer = true,
+            service = true,
+        },
+    }
+end
+
 -- ############################################################
 -- Flight Masters
 -- ############################################################
 
-Flight(352, "Dungar Longdrink", "Gryphon Master")
-Flight(523, "Thor", "Gryphon Master")
-Flight(931, "Ariena Stormfeather", "Gryphon Master")
-Flight(1387, "Thysta", "Wind Rider Master")
-Flight(1571, "Shellei Brondir", "Gryphon Master")
-Flight(1572, "Thorgrum Borrelson", "Gryphon Master")
-Flight(1573, "Gryth Thurden", "Gryphon Master")
-Flight(2226, "Karos Razok", "Bat Handler")
-Flight(2299, "Borgus Stoutarm", "Gryphon Master")
-Flight(2389, "Zarise", "Bat Handler")
-Flight(2409, "Felicia Maline", "Gryphon Master")
-Flight(2432, "Darla Harris", "Gryphon Master")
-Flight(2835, "Cedrik Prose", "Gryphon Master")
-Flight(2851, "Urda", "Wind Rider Master")
-Flight(2858, "Gringer", "Wind Rider Master")
-Flight(2859, "Gyll", "Gryphon Master")
-Flight(2861, "Gorrik", "Wind Rider Master")
-Flight(2941, "Lanie Reed", "Gryphon Master")
-Flight(2995, "Tal", "Wind Rider Master")
-Flight(3305, "Grisha", "Wind Rider Master")
-Flight(3310, "Doras", "Wind Rider Master")
-Flight(3575, "Praenus Raxxeus", "Bat Handler")
-Flight(3615, "Devrak", "Wind Rider Master")
-Flight(3838, "Vesprystus", "Hippogryph Master")
-Flight(3841, "Caylais Moonfeather", "Hippogryph Master")
-Flight(4267, "Daelyshia", "Hippogryph Master")
-Flight(4312, "Tharm", "Wind Rider Master")
-Flight(4314, "Gorkas", "Wind Rider Master")
-Flight(4317, "Nyse", "Wind Rider Master")
-Flight(4319, "Thyssiana", "Hippogryph Master")
-Flight(4321, "Baldruc", "Gryphon Master")
-Flight(4407, "Teloren", "Hippogryph Master")
-Flight(4551, "Michael Garrett", "Bat Handler")
-Flight(6026, "Breyk", "Wind Rider Master")
-Flight(6706, "Baritanas Skyriver", "Hippogryph Master")
-Flight(6726, "Thalon", "Wind Rider Master")
-Flight(7823, "Bera Stonehammer", "Gryphon Master")
-Flight(7824, "Bulkrek Ragefist", "Wind Rider Master")
-Flight(8018, "Guthrum Thunderfist", "Gryphon Master")
-Flight(8019, "Fyldren Moonfeather", "Hippogryph Master")
-Flight(8020, "Shyn", "Wind Rider Master")
-Flight(8609, "Alexandra Constantine", "Gryphon Master")
-Flight(8610, "Kroum", "Wind Rider Master")
-Flight(10378, "Omusa Thunderhorn", "Wind Rider Master")
-Flight(10583, "Gryfe", "Flight Master")
-Flight(10897, "Sindrayl", "Hippogryph Master")
-Flight(11138, "Maethrya", "Hippogryph Master")
-Flight(11139, "Yugrek", "Wind Rider Master")
-Flight(11899, "Shardi", "Wind Rider Master")
-Flight(11900, "Brakkar", "Wind Rider Master")
-Flight(11901, "Andruk", "Wind Rider Master")
-Flight(12577, "Jarrodenus", "Hippogryph Master")
-Flight(12578, "Mishellena", "Hippogryph Master")
-Flight(12596, "Bibilfaz Featherwhistle", "Gryphon Master")
-Flight(12616, "Vhulgra", "Wind Rider Master")
-Flight(12617, "Khaelyn Steelwing", "Gryphon Master")
-Flight(12636, "Georgia", "Bat Handler")
-Flight(12740, "Faustron", "Wind Rider Master")
-Flight(13177, "Vahgruk", "Wind Rider Master")
-Flight(15177, "Cloud Skydancer", "Hippogryph Master")
-Flight(15178, "Runk Windtamer", "Wind Rider Master")
-Flight(16189, "Skymaster Sunwing", "Dragonhawk Master")
-Flight(16192, "Skymistress Gloaming", "Dragonhawk Master")
-Flight(16227, "Bragok", "Flight Master")
-Flight(16587, "Barley", "Wind Rider Master")
-Flight(16822, "Flightmaster Krill Bitterhue", "Gryphon Master")
-Flight(17554, "Laando", "Hippogryph Master")
-Flight(17555, "Stephanos", "Hippogryph Master")
-Flight(18785, "Kuma", "Hippogryph Master")
-Flight(18788, "Munci", "Hippogryph Master")
-Flight(18789, "Furgu", "Hippogryph Master")
-Flight(18807, "Kerna", "Wind Rider Master")
-Flight(18808, "Gursha", "Wind Rider Master")
-Flight(18809, "Furnan Skysoar", "Gryphon Master")
-Flight(18930, "Vlagga Freyfeather", "Wind Rider Master")
-Flight(18931, "Amish Wildhammer", "Gryphon Master")
-Flight(18937, "Amerun Leafshade", "Hippogryph Master")
-Flight(18938, "Krexcil", "Flight Master")
-Flight(18939, "Brubeck Stormfoot", "Gryphon Master")
-Flight(18940, "Nutral", "Flight Master")
-Flight(18942, "Innalia", "Wind Rider Master")
-Flight(18953, "Unoke Tenderhoof", "Wind Rider Master")
-Flight(19558, "Amilya Airheart", "Wind Rider Master")
-Flight(19581, "Maddix", "Flight Master")
-Flight(19583, "Grennik", "Flight Master")
-Flight(20234, "Runetog Wildhammer", "Gryphon Master")
-Flight(20515, "Harpax", "Flight Master")
-Flight(21107, "Rip Pedalslam", "Gryphon Master")
-Flight(21766, "Alieshor", "Flight Master")
-Flight(22216, "Fhyn Leafshadow", "Flight Master")
-Flight(22455, "Sky-Master Maxxor", "Flight Master")
-Flight(22485, "Halu", "Hippogryph Master")
-Flight(22935, "Suralais Farwind", "Hippogryph Master")
-Flight(22937, "Noorab", "Hippogryph Master")
-Flight(23612, "Dyslix Silvergrub", "Flight Master")
-Flight(24366, "Nizzle", "Gryphon Master")
-Flight(24851, "Kiz Coilspanner", "Flight Master")
-Flight(26560, "Ohura", "Dragonhawk Master")
+for _, id in ipairs({
+    352, 523, 931, 1387, 1571, 1572, 1573, 2226, 2299, 2389, 2409, 2432,
+    2835, 2851, 2858, 2859, 2861, 2941, 2995, 3305, 3310, 3575, 3615, 3838,
+    3841, 4267, 4312, 4314, 4317, 4319, 4321, 4407, 4551, 6026, 6706, 6726,
+    7823, 7824, 8018, 8019, 8020, 8609, 8610, 10378, 10583, 10897, 11138, 11139,
+    11899, 11900, 11901, 12577, 12578, 12596, 12616, 12617, 12636, 12740, 13177, 15177,
+    15178, 16189, 16192, 16227, 16587, 16822, 17554, 17555, 18785, 18788, 18789, 18807,
+    18808, 18809, 18930, 18931, 18937, 18938, 18939, 18940, 18942, 18953, 19558, 19581,
+    19583, 20234, 20515, 21107, 21766, 22216, 22455, 22485, 22935, 22937, 23612, 24366,
+    24851, 26560,
+}) do
+    Flight(id)
+end
 
 -- ############################################################
 -- Guards
 -- ############################################################
 
-Guard(68, "Stormwind City Guard", "Stormwind City Guard")
-Guard(1423, "Stormwind Guard", "Stormwind Guard")
-Guard(1756, "Stormwind Royal Guard", "Stormwind Royal Guard")
-Guard(3084, "Bluffwatcher", "Bluffwatcher")
-Guard(3296, "Orgrimmar Grunt", "Orgrimmar Grunt")
-Guard(4262, "Darnassus Sentinel", "Darnassus Sentinel")
-Guard(5595, "Ironforge Guard", "Ironforge Guard")
-Guard(5624, "Undercity Guardian", "Undercity Guardian")
-Guard(16221, "Silvermoon Guardian", "Silvermoon Guardian")
-Guard(16222, "Silvermoon City Guardian", "Silvermoon City Guardian")
-Guard(16733, "Exodar Peacekeeper", "Exodar Peacekeeper")
-Guard(19687, "Shattrath City Peacekeeper", "Shattrath City Peacekeeper")
+for _, id in ipairs({
+    68, 1423, 1756, 3084, 3296, 4262, 5595, 5624, 16221, 16222, 16733, 19687,
+}) do
+    Guard(id)
+end
+
+-- ############################################################
+-- Battlemasters
+-- ############################################################
+
+for _, npcId in ipairs({
+    347, 857, 907, 2302, 2804, 3890, 5118, 7314, 7410, 7427,
+    10360, 12197, 12198, 14942, 14981, 14982, 15006, 15007, 15008,
+    16694, 16695, 16696, 16711, 17506, 17507, 18895, 19855, 19858,
+    19859, 19905, 19906, 19907, 19908, 19909, 19910, 19911, 19912,
+    19915, 19923, 19925, 20118, 20119, 20120, 20269, 20271, 20272,
+    20273, 20274, 20276, 20362, 20374, 20381, 20382, 20383, 20384,
+    20385, 20386, 20388, 20390, 20497, 20499, 21235, 25991, 26760,
+}) do
+    Battle(npcId)
+end
+
+-- ############################################################
+-- Innkeepers
+-- ############################################################
+
+for _, npcId in ipairs({
+    295, 1247, 1327, 1464, 2352, 2388, 3934, 5111, 5688, 5814,
+    6272, 6727, 6734, 6735, 6736, 6737, 6738, 6739, 6740, 6741,
+    6746, 6747, 6778, 6790, 6791, 6806, 6807, 6928, 6929, 6930,
+    7714, 7731, 7733, 7736, 7737, 7744, 8931, 9356, 9501, 11103,
+    11106, 11116, 11118, 12196, 14731, 15174, 15397, 15433, 16256,
+    16458, 16542, 16553, 16602, 16618, 16739, 16826, 17553, 17630,
+    18245, 18251, 18905, 18906, 18907, 18908, 18913, 18914, 18957,
+    19046, 19232, 19296, 19319, 19352, 19470, 19495, 19531, 19571,
+    21088, 21110, 21744, 21746, 22922, 23143, 23995, 24208, 25036,
+}) do
+    Inn(npcId)
+end
+
+-- ############################################################
+-- Stable Masters
+-- ############################################################
+
+for _, npcId in ipairs({
+    6749, 9896, 9976, 9977, 9978, 9979, 9980, 9981, 9982, 9983,
+    9984, 9985, 9986, 9987, 9988, 9989, 10045, 10046, 10047, 10048,
+    10049, 10050, 10051, 10052, 10053, 10054, 10055, 10056, 10057,
+    10058, 10059, 10060, 10061, 10062, 10063, 10085, 11069, 11104,
+    11105, 11117, 11119, 13616, 13617, 14741, 15131, 15722, 16094,
+    16156, 16185, 16586, 16656, 16665, 16764, 16824, 17485, 17666,
+    17896, 18244, 18250, 18984, 19018, 19019, 19325, 19368, 19476,
+    21336, 21517, 21518, 22468, 22469, 23392, 24905, 24974, 25037,
+}) do
+    Stable(npcId)
+end
+
+-- ############################################################
+-- Finance (Bankers + Auctioneers)
+-- ############################################################
+
+for _, npcId in ipairs({
+    2424, 2455, 2456, 2457, 2458, 2459, 2460, 2461, 2625, 2996,
+    3309, 3318, 3320, 3496, 4155, 4208, 4209, 4549, 4550, 5060,
+    5099, 7799, 8119, 8123, 8124, 8356, 8357, 13917, 16615, 16616,
+    16617, 16627, 16628, 16629, 16707, 16710, 17627, 17628, 17629,
+    17631, 17632, 17633, 17773, 18348, 18349, 18350, 18761, 19034,
+    19246, 19318, 19338, 21732, 21733, 21734, 28343,
+}) do
+    Finance(npcId)
+end
+
+-- ############################################################
+-- Trainers
+-- ############################################################
+
+-- Warrior
+for _, id in ipairs({
+    911, 912, 913, 914, 985, 1229, 1901, 2119, 2131, 3041, 3042, 3043,
+    3059, 3063, 3153, 3169, 3353, 3354, 3408, 3593, 3598, 4087, 4089, 4593,
+    4594, 4595, 5113, 5114, 5479, 5480, 7315, 8141, 16503, 16771, 17120, 17480,
+    17504,
+}) do
+    Trainer(id, "class", "WARRIOR")
+end
+
+-- Mage
+for _, id in ipairs({
+    198, 328, 331, 944, 1228, 2124, 2128, 2485, 2489, 2492, 3047, 3048,
+    3049, 4165, 4566, 4567, 4568, 5144, 5145, 5146, 5497, 5498, 5880, 5882,
+    5883, 5884, 5885, 5957, 5958, 7311, 7312, 15279, 16269, 16500, 16651, 16652,
+    16653, 16654, 16749, 16755, 17481, 17513, 17514, 19340, 20791, 23103, 27703, 27704,
+    27705,
+}) do
+    Trainer(id, "class", "MAGE")
+end
+
+-- Rogue
+for _, id in ipairs({
+    915, 916, 917, 918, 1234, 1411, 2122, 2130, 3155, 3170, 3327, 3328,
+    3401, 3594, 3599, 4163, 4214, 4215, 4582, 4583, 4584, 5165, 5166, 5167,
+    6707, 13283, 15285, 16279, 16684, 16685, 16686,
+}) do
+    Trainer(id, "class", "ROGUE")
+end
+
+-- Druid
+for _, id in ipairs({
+    3033, 3034, 3036, 3060, 3064, 3597, 3602, 4217, 4218, 4219, 5504, 5505,
+    5506, 8142, 9465, 12042, 16655, 16721,
+}) do
+    Trainer(id, "class", "DRUID")
+end
+
+-- Hunter
+for _, id in ipairs({
+    895, 987, 1231, 1404, 3038, 3039, 3040, 3061, 3065, 3154, 3171, 3352,
+    3406, 3407, 3596, 3601, 3963, 4138, 4146, 4205, 5115, 5116, 5117, 5501,
+    5515, 5516, 5517, 8308, 10930, 15513, 16270, 16499, 16672, 16673, 16674, 16738,
+    17110, 17122, 17505,
+}) do
+    Trainer(id, "class", "HUNTER")
+end
+
+-- Priest
+for _, id in ipairs({
+    375, 376, 377, 837, 1226, 2123, 2129, 3044, 3045, 3046, 3595, 3600,
+    3706, 3707, 4090, 4091, 4092, 4606, 4607, 4608, 5141, 5142, 5143, 5484,
+    5489, 5994, 6014, 6018, 11397, 11401, 11406, 15284, 16276, 16502, 16658, 16659,
+    16660, 16756, 17482, 17510, 17511,
+}) do
+    Trainer(id, "class", "PRIEST")
+end
+
+-- Warlock
+for _, id in ipairs({
+    459, 460, 461, 906, 988, 2126, 2127, 3156, 3172, 3324, 3325, 3326,
+    4563, 4564, 4565, 5171, 5172, 5173, 5495, 5496, 5612, 15283, 16266, 16646,
+    16647, 16648, 23534,
+}) do
+    Trainer(id, "class", "WARLOCK")
+end
+
+-- Paladin
+for _, id in ipairs({
+    925, 926, 927, 928, 1232, 5147, 5148, 5149, 5491, 5492, 8140, 15280,
+    16275, 16501, 16679, 16680, 16681, 16761, 17121, 17483, 17509, 17844, 20406, 23128,
+}) do
+    Trainer(id, "class", "PALADIN")
+end
+
+-- Shaman
+for _, id in ipairs({
+    986, 3030, 3031, 3032, 3062, 3066, 3157, 3173, 3344, 3403, 13417, 17089,
+    17204, 17212, 17219, 17519, 17520, 20407, 23127,
+}) do
+    Trainer(id, "class", "SHAMAN")
+end
+
+-- Generic Trainers
+for _, id in ipairs({
+    514, 543, 812, 908, 1103, 1215, 1218, 1241, 1292, 1300, 1317, 1346,
+    1355, 1382, 1385, 1386, 1430, 1458, 1470, 1473, 1632, 1651, 1676, 1680,
+    1681, 1683, 1699, 1700, 1701, 1702, 1703, 2114, 2132, 2326, 2327, 2329,
+    2367, 2390, 2391, 2399, 2627, 2704, 2798, 2818, 2834, 2836, 2837, 2855,
+    2856, 2878, 2879, 2942, 2998, 3001, 3004, 3007, 3009, 3011, 3013, 3026,
+    3028, 3067, 3069, 3087, 3136, 3137, 3174, 3175, 3179, 3181, 3184, 3185,
+    3290, 3306, 3332, 3345, 3347, 3355, 3357, 3363, 3365, 3373, 3399, 3404,
+    3478, 3484, 3494, 3523, 3545, 3549, 3555, 3557, 3603, 3604, 3605, 3606,
+    3607, 3620, 3622, 3624, 3688, 3690, 3698, 3703, 3704, 3964, 3965, 3967,
+    4156, 4159, 4160, 4193, 4204, 4210, 4211, 4212, 4213, 4254, 4258, 4320,
+    4552, 4573, 4576, 4578, 4588, 4591, 4596, 4598, 4611, 4614, 4616, 4732,
+    4752, 4753, 4772, 4773, 4898, 4900, 5032, 5037, 5038, 5040, 5041, 5127,
+    5137, 5150, 5153, 5157, 5159, 5161, 5164, 5174, 5177, 5392, 5482, 5493,
+    5499, 5502, 5511, 5513, 5518, 5564, 5566, 5690, 5695, 5759, 5784, 5938,
+    5939, 5941, 5943, 6094, 6251, 6286, 6287, 6288, 6289, 6290, 6291, 6292,
+    6295, 6297, 6299, 6306, 6387, 7087, 7088, 7089, 7230, 7231, 7232, 7406,
+    7866, 7867, 7868, 7869, 7870, 7871, 7944, 7946, 7948, 7949, 7953, 7954,
+    8126, 8128, 8144, 8146, 8153, 8306, 8736, 8738, 9584, 10086, 10088, 10089,
+    10090, 10993, 11017, 11025, 11031, 11037, 11048, 11050, 11051, 11052, 11072, 11073,
+    11074, 11097, 11098, 11146, 11177, 11178, 11557, 11865, 11866, 11867, 11868, 11869,
+    11870, 12025, 12030, 12032, 12961, 13084, 14740, 15400, 15501, 16000, 16160, 16161,
+    16190, 16253, 16265, 16271, 16272, 16273, 16277, 16278, 16280, 16366, 16367, 16583,
+    16588, 16621, 16633, 16639, 16640, 16642, 16644, 16662, 16663, 16667, 16669, 16675,
+    16676, 16688, 16692, 16702, 16712, 16719, 16723, 16724, 16725, 16726, 16727, 16728,
+    16729, 16731, 16736, 16744, 16746, 16752, 16763, 16773, 16774, 16780, 16823, 17005,
+    17101, 17214, 17215, 17222, 17245, 17246, 17424, 17434, 17441, 17442, 17484, 17487,
+    17488, 17634, 17637, 17983, 18018, 18747, 18748, 18749, 18751, 18752, 18753, 18754,
+    18755, 18771, 18772, 18773, 18774, 18775, 18776, 18777, 18779, 18802, 18804, 18987,
+    18988, 18990, 18991, 18993, 19052, 19063, 19180, 19184, 19185, 19186, 19187, 19251,
+    19252, 19341, 19369, 19478, 19539, 19540, 19576, 19774, 19775, 19777, 19778, 20124,
+    20125, 20500, 20511, 20914, 21087, 22005, 22477, 24868, 25099, 26324, 26325, 26326,
+    26327, 26328, 26329, 26330, 26331, 26332,
+}) do
+    Trainer(id)
+end

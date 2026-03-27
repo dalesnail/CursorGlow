@@ -38,18 +38,6 @@ local function GetGLiB()
     return _G.GLiB
 end
 
-local CLASS_TRAINER_NAMES = {
-    WARRIOR = "Warrior",
-    MAGE = "Mage",
-    ROGUE = "Rogue",
-    DRUID = "Druid",
-    HUNTER = "Hunter",
-    PRIEST = "Priest",
-    WARLOCK = "Warlock",
-    PALADIN = "Paladin",
-    SHAMAN = "Shaman",
-}
-
 local function HasTooltipKeywords(dataKey, lines, category)
     local keywordData = Data and Data[dataKey]
     local categoryData = keywordData and keywordData[category]
@@ -142,40 +130,6 @@ local function GetGLiBIdentity(name)
     end
 
     return nil, nil, nil
-end
-
-local function IsFlightMasterName(name)
-    if not name or not Data then
-        return false
-    end
-
-    local flightMasters = Data["FLIGHTMASTERS"] or Data["FLIGHTMASTER"]
-    return flightMasters and flightMasters[name] or false
-end
-
-local function ResolveTrainerState(lines)
-    if not HasTooltipRole(lines, "TRAINER") then
-        return nil
-    end
-
-    local _, playerClassToken = UnitClass("player")
-    if not playerClassToken then
-        return "TRAINER"
-    end
-
-    for _, line in ipairs(lines or {}) do
-        for classToken, className in pairs(CLASS_TRAINER_NAMES) do
-            if strfind(line, className .. " Trainer", 1, true) then
-                if classToken == playerClassToken then
-                    return "TRAINER"
-                end
-
-                return "SPEAK"
-            end
-        end
-    end
-
-    return "TRAINER"
 end
 
 local function NormalizeBagID(bag)
@@ -359,38 +313,41 @@ local function GetHoveredBagItem()
 end
 
 local function AddTooltipRoleCandidates(candidates, lines, name)
-    local _, glibType = GetGLiBIdentity(name)
+    local glib = GetGLiB()
+    local _, glibType, npcId = GetGLiBIdentity(name)
+    local glibInfo = npcId and glib and type(glib.NpcById) == "function" and glib:NpcById(npcId) or nil
 
     if glibType == "flightmaster" then
         table.insert(candidates, "FLIGHTMASTER")
-    -- >>> TEMPORARILY DISABLE FLIGHTMASTER FALLBACKS FOR TESTING >>>
-    -- elseif HasTooltipRole(lines, "FLIGHTMASTER") then
-    --     table.insert(candidates, "FLIGHTMASTER")
-    -- elseif IsFlightMasterName(name) then
-    --     table.insert(candidates, "FLIGHTMASTER")
-    -- <<< TEMPORARILY DISABLE FLIGHTMASTER FALLBACKS FOR TESTING <<<
     end
 
-    if HasTooltipRole(lines, "BATTLEMASTER") then
+    if glibType == "battlemaster" then
         table.insert(candidates, "BATTLEMASTER")
     end
 
-    local trainerState = ResolveTrainerState(lines)
-    if trainerState then
-        table.insert(candidates, trainerState)
+    if glibType == "trainer" then
+        if glibInfo and glibInfo.subtype == "class" then
+            local _, playerClass = UnitClass("player")
+
+            if glibInfo.class == playerClass then
+                table.insert(candidates, "TRAINER")
+            else
+                table.insert(candidates, "SPEAK")
+            end
+        else
+            table.insert(candidates, "TRAINER")
+        end
     end
 
     if glibType == "directions_guard" then
         table.insert(candidates, "DIRECTIONS_GUARD")
-    elseif HasTooltipRole(lines, "DIRECTIONS_GUARD") then
-        table.insert(candidates, "DIRECTIONS_GUARD")
     end
 
-    if HasTooltipRole(lines, "INNKEEPER") then
+    if glibType == "innkeeper" then
         table.insert(candidates, "INNKEEPER")
     end
 
-    if HasTooltipRole(lines, "STABLEMASTER") then
+    if glibType == "stablemaster" then
         table.insert(candidates, "STABLEMASTER")
     end
 
@@ -398,7 +355,7 @@ local function AddTooltipRoleCandidates(candidates, lines, name)
         table.insert(candidates, "MAILBOX")
     end
 
-    if HasTooltipRole(lines, "FINANCE") then
+    if glibType == "finance" then
         table.insert(candidates, "FINANCE")
     end
 
