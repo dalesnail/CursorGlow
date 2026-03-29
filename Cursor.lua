@@ -23,6 +23,20 @@ local function SetTextureDesaturation(texture, enabled)
     end
 end
 
+local function DisableTexturePixelSnapping(texture)
+    if not texture then
+        return
+    end
+
+    if texture.SetSnapToPixelGrid then
+        texture:SetSnapToPixelGrid(false)
+    end
+
+    if texture.SetTexelSnappingBias then
+        texture:SetTexelSnappingBias(0)
+    end
+end
+
 local function Clamp(value, lower, upper)
     return min(upper, max(lower, value or 0))
 end
@@ -244,18 +258,12 @@ function GG:RefreshGlowAppearance()
     SetTextureDesaturation(tex, composite.desaturate)
 
     if effectTex then
-        if composite.overlayAlpha > 0.001 then
-            effectTex:SetVertexColor(
-                Clamp(composite.colorR * composite.overlayScale, 0, 1),
-                Clamp(composite.colorG * composite.overlayScale, 0, 1),
-                Clamp(composite.colorB * composite.overlayScale, 0, 1)
-            )
-            effectTex:SetAlpha(composite.overlayAlpha)
-            effectTex:Show()
-        else
-            effectTex:SetAlpha(0)
-            effectTex:Hide()
-        end
+        effectTex:SetVertexColor(
+            Clamp(composite.colorR * composite.overlayScale, 0, 1),
+            Clamp(composite.colorG * composite.overlayScale, 0, 1),
+            Clamp(composite.colorB * composite.overlayScale, 0, 1)
+        )
+        effectTex:SetAlpha(composite.overlayAlpha > 0.001 and composite.overlayAlpha or 0)
 
         SetTextureDesaturation(effectTex, composite.desaturate)
     end
@@ -268,12 +276,14 @@ function GG:CreateGauntletGlow()
     local tex = f:CreateTexture(nil, "OVERLAY")
     tex:SetAllPoints()
     tex:SetBlendMode("ADD")
+    DisableTexturePixelSnapping(tex)
 
     local effectTex = f:CreateTexture(nil, "OVERLAY", nil, 1)
     effectTex:SetAllPoints()
     effectTex:SetBlendMode("ADD")
     effectTex:SetAlpha(0)
-    effectTex:Hide()
+    effectTex:Show()
+    DisableTexturePixelSnapping(effectTex)
 
     f.texture = tex
     f.effectTexture = effectTex
@@ -476,6 +486,10 @@ function GG:UpdateCursorPosition()
 
     self.gauntletGlow:ClearAllPoints()
     self.gauntletGlow:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x + offsetX, y + offsetY)
+end
+
+function GG:HandleCursorEnvironmentChanged()
+    self:UpdateCursorPosition()
 end
 
 function GG:UpdateGlowEffectAnimation(elapsed)

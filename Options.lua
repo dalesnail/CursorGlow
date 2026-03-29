@@ -1709,7 +1709,7 @@ local function OpenCursorTrailColorPicker(self, onChanged)
 end
 
 local function BuildCursorTrailSection(self, page, anchorFrame)
-    page.trailSection = CreateSectionPanel(page.scrollContent, "Cursor Trail", "Adds a simple glowing trail behind the cursor while this feature is enabled.")
+    page.trailSection = CreateSectionPanel(page.scrollContent, "Cursor Trail", "Could effect performance")
     page.trailSection:SetPoint("TOPLEFT", anchorFrame, "BOTTOMLEFT", 0, -18)
     page.trailSection:SetPoint("TOPRIGHT", page.scrollContent, "TOPRIGHT", 0, 0)
     page.trailSection:SetHeight(308)
@@ -1789,14 +1789,6 @@ local function BuildCursorTrailSection(self, page, anchorFrame)
         page.trailLengthSlider:SetDisplayValue(roundedValue)
         SetCursorTrailNumericValue(self, "trailLength", roundedValue)
     end)
-
-    page.trailLengthNote = CreateText(page.trailSection, "GameFontHighlightSmall", "Higher values can reduce performance on some systems.", FONT_STYLES.muted)
-    page.trailLengthNote:SetPoint("TOPLEFT", page.trailLengthSlider, "BOTTOMLEFT", 4, -8)
-    page.trailLengthNote:SetPoint("RIGHT", page.trailSection, "RIGHT", -16, 0)
-
-    page.trailNote = CreateText(page.scrollContent, "GameFontHighlightSmall", "Trail controls save per profile and update live while the panel is open", FONT_STYLES.muted)
-    page.trailNote:SetPoint("TOPLEFT", page.trailSection, "BOTTOMLEFT", 4, -14)
-    page.trailNote:SetPoint("RIGHT", page.scrollContent, "RIGHT", 0, 0)
 
     page.RefreshTrailControls = function(currentPage)
         local trailEnabled = GetCursorTrailEnabled(self)

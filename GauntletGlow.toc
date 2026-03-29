@@ -5,6 +5,7 @@
 ## Author: Dalesnail
 ## SavedVariables: GauntletGlowDB
 ## IconTexture: Interface\AddOns\GauntletGlow\Media\Icons\icon_glow
+## X-Curse-Project-ID: 1493671
 
 # ------------------------------
 # Ace3 (EMBEDDED - FULL STRUCTURE)

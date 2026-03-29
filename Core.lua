@@ -499,6 +499,8 @@ function GG:OnEnable()
 
     self:RegisterEvent("LOOT_OPENED")
     self:RegisterEvent("MERCHANT_SHOW")
+    self:RegisterEvent("DISPLAY_SIZE_CHANGED", "HandleCursorEnvironmentChanged")
+    self:RegisterEvent("UI_SCALE_CHANGED", "HandleCursorEnvironmentChanged")
 
     self.cleanupTimer = self:ScheduleRepeatingTimer("CleanupLootedUnits", CLEANUP_INTERVAL)
 end
