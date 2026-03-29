@@ -41,6 +41,10 @@ local function Clamp(value, lower, upper)
     return min(upper, max(lower, value or 0))
 end
 
+local function NearlyEqual(left, right, epsilon)
+    return abs((left or 0) - (right or 0)) <= (epsilon or 0.001)
+end
+
 local function MixColor(fromR, fromG, fromB, toR, toG, toB, amount)
     return fromR + ((toR - fromR) * amount),
         fromG + ((toG - fromG) * amount),
@@ -248,24 +252,60 @@ function GG:RefreshGlowAppearance()
     end
 
     local composite = GetEffectComposite(self)
+    local baseR = Clamp(composite.colorR * composite.baseIntensity, 0, 1)
+    local baseG = Clamp(composite.colorG * composite.baseIntensity, 0, 1)
+    local baseB = Clamp(composite.colorB * composite.baseIntensity, 0, 1)
+    local baseAlpha = composite.alpha
+    local baseVisualState = glow.baseVisualState or {}
 
-    tex:SetVertexColor(
-        Clamp(composite.colorR * composite.baseIntensity, 0, 1),
-        Clamp(composite.colorG * composite.baseIntensity, 0, 1),
-        Clamp(composite.colorB * composite.baseIntensity, 0, 1)
-    )
-    tex:SetAlpha(composite.alpha)
-    SetTextureDesaturation(tex, composite.desaturate)
+    if not NearlyEqual(baseVisualState.colorR, baseR)
+        or not NearlyEqual(baseVisualState.colorG, baseG)
+        or not NearlyEqual(baseVisualState.colorB, baseB) then
+        tex:SetVertexColor(baseR, baseG, baseB)
+        baseVisualState.colorR = baseR
+        baseVisualState.colorG = baseG
+        baseVisualState.colorB = baseB
+    end
+
+    if not NearlyEqual(baseVisualState.alpha, baseAlpha) then
+        tex:SetAlpha(baseAlpha)
+        baseVisualState.alpha = baseAlpha
+    end
+
+    if baseVisualState.desaturate ~= composite.desaturate then
+        SetTextureDesaturation(tex, composite.desaturate)
+        baseVisualState.desaturate = composite.desaturate
+    end
+
+    glow.baseVisualState = baseVisualState
 
     if effectTex then
-        effectTex:SetVertexColor(
-            Clamp(composite.colorR * composite.overlayScale, 0, 1),
-            Clamp(composite.colorG * composite.overlayScale, 0, 1),
-            Clamp(composite.colorB * composite.overlayScale, 0, 1)
-        )
-        effectTex:SetAlpha(composite.overlayAlpha > 0.001 and composite.overlayAlpha or 0)
+        local overlayR = Clamp(composite.colorR * composite.overlayScale, 0, 1)
+        local overlayG = Clamp(composite.colorG * composite.overlayScale, 0, 1)
+        local overlayB = Clamp(composite.colorB * composite.overlayScale, 0, 1)
+        local overlayAlpha = composite.overlayAlpha > 0.001 and composite.overlayAlpha or 0
+        local overlayVisualState = glow.overlayVisualState or {}
 
-        SetTextureDesaturation(effectTex, composite.desaturate)
+        if not NearlyEqual(overlayVisualState.colorR, overlayR)
+            or not NearlyEqual(overlayVisualState.colorG, overlayG)
+            or not NearlyEqual(overlayVisualState.colorB, overlayB) then
+            effectTex:SetVertexColor(overlayR, overlayG, overlayB)
+            overlayVisualState.colorR = overlayR
+            overlayVisualState.colorG = overlayG
+            overlayVisualState.colorB = overlayB
+        end
+
+        if not NearlyEqual(overlayVisualState.alpha, overlayAlpha) then
+            effectTex:SetAlpha(overlayAlpha)
+            overlayVisualState.alpha = overlayAlpha
+        end
+
+        if overlayVisualState.desaturate ~= composite.desaturate then
+            SetTextureDesaturation(effectTex, composite.desaturate)
+            overlayVisualState.desaturate = composite.desaturate
+        end
+
+        glow.overlayVisualState = overlayVisualState
     end
 end
 
@@ -497,16 +537,33 @@ function GG:UpdateGlowEffectAnimation(elapsed)
     local current = effectState.current
     local target = effectState.target
     local transitionSpeed = GetTransitionResponseSpeed(target.transitionSpeed)
+    local visualsChanged = false
 
-    current.colorR = SmoothValue(current.colorR, target.colorR, transitionSpeed, elapsed)
-    current.colorG = SmoothValue(current.colorG, target.colorG, transitionSpeed, elapsed)
-    current.colorB = SmoothValue(current.colorB, target.colorB, transitionSpeed, elapsed)
-    current.tintStrength = SmoothValue(current.tintStrength, target.tintStrength, transitionSpeed, elapsed)
-    current.brightness = SmoothValue(current.brightness, target.brightness, transitionSpeed, elapsed)
-    current.alpha = SmoothValue(current.alpha, target.alpha, transitionSpeed, elapsed)
-    current.desaturate = target.desaturate and true or false
-    current.pulseSpeed = SmoothValue(current.pulseSpeed, target.pulseSpeed, transitionSpeed, elapsed)
-    current.pulseStrength = SmoothValue(current.pulseStrength, target.pulseStrength, transitionSpeed, elapsed)
+    local function UpdateAnimatedValue(key)
+        local nextValue = SmoothValue(current[key], target[key], transitionSpeed, elapsed)
+        if nextValue ~= current[key] then
+            current[key] = nextValue
+            visualsChanged = true
+        end
+    end
 
-    self:RefreshGlowAppearance()
+    UpdateAnimatedValue("colorR")
+    UpdateAnimatedValue("colorG")
+    UpdateAnimatedValue("colorB")
+    UpdateAnimatedValue("tintStrength")
+    UpdateAnimatedValue("brightness")
+    UpdateAnimatedValue("alpha")
+
+    local nextDesaturate = target.desaturate and true or false
+    if current.desaturate ~= nextDesaturate then
+        current.desaturate = nextDesaturate
+        visualsChanged = true
+    end
+
+    UpdateAnimatedValue("pulseSpeed")
+    UpdateAnimatedValue("pulseStrength")
+
+    if visualsChanged or (current.pulseStrength or 0) > 0.0005 then
+        self:RefreshGlowAppearance()
+    end
 end
