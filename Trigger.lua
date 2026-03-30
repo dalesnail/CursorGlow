@@ -10,6 +10,7 @@ local UnitIsUnit = UnitIsUnit
 local UnitCanAttack = UnitCanAttack
 local UnitIsDeadOrGhost = UnitIsDeadOrGhost
 local UnitIsTapDenied = UnitIsTapDenied
+local CanLootUnit = CanLootUnit
 local UnitGUID = UnitGUID
 local UnitClass = UnitClass
 local UnitHealth = UnitHealth
@@ -446,6 +447,25 @@ local function GetHoveredMerchantItemIndex()
     return index
 end
 
+local function CanLootMouseoverCorpse()
+    local guid = UnitGUID("mouseover")
+    if not guid or not CanLootUnit then
+        return false
+    end
+
+    local hasLoot, canLoot = CanLootUnit(guid)
+    return hasLoot and canLoot
+end
+
+local function IsRecentEligibleMouseoverCorpse()
+    local guid = UnitGUID("mouseover")
+    if not guid or not GG or type(GG.IsRecentCorpseGUID) ~= "function" then
+        return false
+    end
+
+    return GG:IsRecentCorpseGUID(guid)
+end
+
 
 local function AddTooltipRoleCandidates(candidates, lines, name)
     local glib = GetGLiB()
@@ -725,7 +745,7 @@ function GG:EvaluateTrigger()
             if timestamp and (GetTime() - timestamp < 120) then
                 table.insert(candidates, "DEFAULT")
             else
-                if not UnitIsTapDenied("mouseover") then
+                if CanLootMouseoverCorpse() or (IsRecentEligibleMouseoverCorpse() and not UnitIsTapDenied("mouseover")) then
                     local autoLoot = GetCVar("autoLootDefault") == "1"
                     local modifier = IsModifiedClick("AUTOLOOTTOGGLE")
                     local isAutoLoot = (autoLoot and not modifier) or (not autoLoot and modifier)

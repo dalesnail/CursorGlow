@@ -2,6 +2,9 @@ local ADDON_NAME, ns = ...
 local strlower = strlower
 local strsplit = strsplit
 local strtrim = strtrim
+local GetTime = GetTime
+local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo
+local bit_band = bit and bit.band or bit32 and bit32.band
 
 ns.CursorStateDefaults = ns.CursorStateDefaults or {
     DEFAULT = {
@@ -444,7 +447,36 @@ GG = LibStub("AceAddon-3.0"):NewAddon(
 ns.GauntletGlow = GG
 
 local LOOT_EXPIRATION = 480
+local RECENT_CORPSE_EXPIRATION = 30
 local CLEANUP_INTERVAL = 30
+
+local GROUP_COMBATLOG_FLAGS = COMBATLOG_OBJECT_AFFILIATION_MINE
+    + COMBATLOG_OBJECT_AFFILIATION_PARTY
+    + COMBATLOG_OBJECT_AFFILIATION_RAID
+    + COMBATLOG_OBJECT_REACTION_FRIENDLY
+local GROUP_CONTROL_FLAGS = COMBATLOG_OBJECT_CONTROL_PLAYER + COMBATLOG_OBJECT_CONTROL_NPC
+local NPC_COMBATLOG_FLAGS = COMBATLOG_OBJECT_TYPE_NPC
+local ELIGIBLE_CORPSE_EVENTS = {
+    DAMAGE_SHIELD = true,
+    DAMAGE_SPLIT = true,
+    RANGE_DAMAGE = true,
+    SPELL_BUILDING_DAMAGE = true,
+    SPELL_DAMAGE = true,
+    SPELL_PERIODIC_DAMAGE = true,
+    SWING_DAMAGE = true,
+}
+
+local function HasCombatLogFlag(flags, mask)
+    return flags and mask and bit_band and bit_band(flags, mask) ~= 0 or false
+end
+
+local function IsGroupCombatUnit(flags)
+    return HasCombatLogFlag(flags, GROUP_COMBATLOG_FLAGS) and HasCombatLogFlag(flags, GROUP_CONTROL_FLAGS)
+end
+
+local function IsNpcCombatUnit(flags)
+    return HasCombatLogFlag(flags, NPC_COMBATLOG_FLAGS)
+end
 
 local function MigratePlayerStateEffectProfile(effectKey, effectProfile)
     if not effectProfile then
@@ -481,6 +513,7 @@ function GG:OnInitialize()
     self:MigratePlayerStateEffects()
 
     self.lootedUnits = {}
+    self.recentCorpseGUIDs = {}
     self.lastMouseoverGUID = nil
     self.playerStateEffectPreviewEnabled = false
     self.playerStateEffectPreviewKey = nil
@@ -497,6 +530,7 @@ function GG:OnEnable()
     self:RegisterChatCommand("gg", "HandleChatCommand")
     self:RegisterChatCommand("gauntletglow", "HandleChatCommand")
 
+    self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
     self:RegisterEvent("LOOT_OPENED")
     self:RegisterEvent("MERCHANT_SHOW")
     self:RegisterEvent("DISPLAY_SIZE_CHANGED", "HandleCursorEnvironmentChanged")
@@ -511,12 +545,46 @@ function GG:LOOT_OPENED()
     end
 end
 
+function GG:MarkRecentCorpseGUID(guid)
+    if guid then
+        self.recentCorpseGUIDs[guid] = GetTime()
+    end
+end
+
+function GG:IsRecentCorpseGUID(guid)
+    local timestamp = guid and self.recentCorpseGUIDs[guid]
+    return timestamp and (GetTime() - timestamp) < RECENT_CORPSE_EXPIRATION or false
+end
+
+function GG:COMBAT_LOG_EVENT_UNFILTERED()
+    if not CombatLogGetCurrentEventInfo then
+        return
+    end
+
+    local _, eventType, _, sourceGUID, _, sourceFlags, _, destGUID, _, destFlags = CombatLogGetCurrentEventInfo()
+    if not ELIGIBLE_CORPSE_EVENTS[eventType] then
+        return
+    end
+
+    if IsGroupCombatUnit(sourceFlags) and IsNpcCombatUnit(destFlags) then
+        self:MarkRecentCorpseGUID(destGUID)
+    elseif IsNpcCombatUnit(sourceFlags) and IsGroupCombatUnit(destFlags) then
+        self:MarkRecentCorpseGUID(sourceGUID)
+    end
+end
+
 function GG:CleanupLootedUnits()
     local now = GetTime()
 
     for guid, timestamp in pairs(self.lootedUnits) do
         if now - timestamp > LOOT_EXPIRATION then
             self.lootedUnits[guid] = nil
+        end
+    end
+
+    for guid, timestamp in pairs(self.recentCorpseGUIDs) do
+        if now - timestamp > RECENT_CORPSE_EXPIRATION then
+            self.recentCorpseGUIDs[guid] = nil
         end
     end
 end
