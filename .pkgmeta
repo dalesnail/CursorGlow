@@ -9,3 +9,4 @@ ignore:
   - *.zip
   - *.bak
   - *.tmp
+  - *.md
